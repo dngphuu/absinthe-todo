@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../static/css/output.css" />
+    <title>Absinthe Todo</title>
+  </head>
+  <body class="bg-[#fafafa]">
+    <!-- Header Bar -->
+    <header class="flex items-center justify-between bg-[#3d72fe] shadow-xl">
+      <div>
+        <!-- Logo and App name -->
+        <h1
+          class="flex items-center text-nowrap p-3 px-5 font-sans text-2xl font-semibold text-white"
+        >
+          <img
+            src="../static/media_resources/logopng.png"
+            alt="App logo"
+            class="mr-2 inline-block h-10"
+          />
+          Absinthe Todo
+        </h1>
+      </div>
+
+      <!-- User Avt and Name -->
+      <button class="mr-4 flex items-center focus:outline-none">
+        <span class="mr-2 text-white">John Doe</span>
+        <img
+          src="https://via.placeholder.com/40"
+          alt="User Avatar"
+          class="h-10 w-10 rounded-full"
+        />
+      </button>
+    </header>
+
+    <!-- Task management -->
+    <main
+      class="mx-auto mt-24 max-w-3xl rounded-md border bg-white p-3 px-5 shadow-xl"
+    >
+      <!-- Add task -->
+      <div class="flex justify-around">
+        <input
+          type="text"
+          placeholder="Add a task..."
+          class="mr-2 w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button type="submit">
+          <svg
+            class="text-white-800 h-6 w-6"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="#bdbdbd"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M3 4a1 1 0 0 0-.822 1.57L6.632 12l-4.454 6.43A1 1 0 0 0 3 20h13.153a1 1 0 0 0 .822-.43l4.847-7a1 1 0 0 0 0-1.14l-4.847-7a1 1 0 0 0-.822-.43H3Z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+      <!-- Display tasks -->
+      <ul class="mt-4 space-y-2">
+        <li class="px-3 py-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input type="checkbox" id="task-1" />
+              <label class="ml-1" for="task-1">Task 1</label>
+            </div>
+            <div>
+              <!-- Edit task -->
+              <button>
+                <svg
+                  class="text-white-800 mr-1 h-6 w-6"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M14 4.182A4.136 4.136 0 0 1 16.9 3c1.087 0 2.13.425 2.899 1.182A4.01 4.01 0 0 1 21 7.037c0 1.068-.43 2.092-1.194 2.849L18.5 11.214l-5.8-5.71 1.287-1.31.012-.012Zm-2.717 2.763L6.186 12.13l2.175 2.141 5.063-5.218-2.141-2.108Zm-6.25 6.886-1.98 5.849a.992.992 0 0 0 .245 1.026 1.03 1.03 0 0 0 1.043.242L10.282 19l-5.25-5.168Zm6.954 4.01 5.096-5.186-2.218-2.183-5.063 5.218 2.185 2.15Z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </button>
+
+              <!-- Delete task -->
+              <button>
+                <svg
+                  class="text-white-800 h-6 w-6"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="#fe4366"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>
