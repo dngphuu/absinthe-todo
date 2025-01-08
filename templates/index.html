@@ -42,8 +42,8 @@
       <div class="flex justify-around">
         <input
           type="text"
-          placeholder="Add a task..."
-          class="mr-2 w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Type here to add new task..."
+          class="mr-2 w-full rounded-md focus:outline-none"
         />
         <button type="submit">
           <svg
@@ -63,37 +63,44 @@
           </svg>
         </button>
       </div>
+
       <!-- Display tasks -->
-      <ul class="mt-4 space-y-2">
-        <li class="px-3 py-2">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <input type="checkbox" id="task-1" />
-              <label class="ml-1" for="task-1">Task 1</label>
-            </div>
-            <div>
-              <!-- Delete task -->
-              <button>
-                <svg
-                  class="text-white-800 h-6 w-6"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="#fe4366"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </li>
-      </ul>
+      <div class="mt-4 w-full">
+        <ul class="w-full">
+          <li class="mb-2 flex w-full items-center justify-between">
+            <input
+              type="checkbox"
+              name="Task 1"
+              id="task1"
+              class="mr-4 h-5 w-5 cursor-pointer"
+            />
+            <input
+              type="text"
+              name="task1_content"
+              id="task1_content"
+              placeholder="This is a task"
+              class="flex-1 border-none px-2 py-1 focus:outline-none"
+            />
+            <button>
+              <svg
+                class="text-black-800 h-[24px] w-[24px]"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="#de5246"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+          </li>
+        </ul>
+      </div>
     </main>
   </body>
 </html>
