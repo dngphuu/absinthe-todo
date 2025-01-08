@@ -1,5 +1,0 @@
-# REQUIREMENTS
-
-- Python
-- NodeJS
-- TailwindCSS
