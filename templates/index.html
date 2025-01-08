@@ -9,6 +9,15 @@
       href="{{ url_for('static', filename='media_resources/favicon.ico') }}"
     />
     <link rel="stylesheet" href="../static/css/output.css" />
+    <style>
+      .hidden {
+        display: none;
+      }
+
+      .show {
+        display: block;
+      }
+    </style>
     <title>Absinthe Todo</title>
   </head>
   <body class="bg-[#fafafa]">
@@ -29,15 +38,29 @@
       </div>
 
       <!-- User Avt and Name -->
-      <button class="mr-4 flex items-center focus:outline-none">
-        <span class="mr-2 text-white">John Doe</span>
-        <img
-          src="https://via.placeholder.com/40"
-          alt="User Avatar"
-          class="h-10 w-10 rounded-full"
-        />
-      </button>
+      <div id="user-avatar">
+        <button class="mr-4 flex items-center focus:outline-none">
+          <span class="mr-2 text-white">John Doe</span>
+          <img
+            src="https://via.placeholder.com/40"
+            alt="User Avatar"
+            class="h-10 w-10 rounded-full"
+          />
+        </button>
+      </div>
     </header>
+
+    <!-- Logout menu -->
+    <div
+      id="logout-menu"
+      class="absolute right-3 mt-2 hidden cursor-pointer rounded-md border-2 bg-white shadow-sm"
+    >
+      <ul>
+        <li class="text-md p-2 text-sm font-medium text-black">
+          <a href="{{ url_for(logout) }}">LOGOUT</a>
+        </li>
+      </ul>
+    </div>
 
     <!-- Task management -->
     <main
@@ -108,4 +131,5 @@
       </div>
     </main>
   </body>
+  <script src="../static/js/app.js"></script>
 </html>
