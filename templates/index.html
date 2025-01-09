@@ -12,10 +12,6 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/output.css') }}"
     />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css')}}"
-    />
     <title>Absinthe Todo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -42,13 +38,14 @@
       </div>
 
       <!-- User Avt and Name -->
-      <div id="user-avatar">
+      <div id="user-info">
         <button class="mr-4 flex items-center focus:outline-none">
           <span class="font-roboto mr-2 text-sm text-white">John Doe</span>
           <img
             src="https://via.placeholder.com/40"
             alt="User Avatar"
-            class="h-10 w-10 rounded-full"
+            id="user-avatar"
+            class="hidden h-10 w-10 rounded-full sm:block"
           />
         </button>
       </div>
