@@ -39,7 +39,9 @@
 
       <!-- User Avt and Name -->
       <div id="user-info">
-        <button class="mr-4 flex items-center focus:outline-none">
+        <button
+          class="mr-4 flex items-center transition-all duration-300 focus:outline-none active:scale-110 active:opacity-80"
+        >
           <span class="font-roboto mr-2 text-sm text-white">John Doe</span>
           <img
             src="https://via.placeholder.com/40"
@@ -54,7 +56,7 @@
     <!-- Logout menu -->
     <div
       id="logout-menu"
-      class="font-rubik absolute right-3 mt-2 hidden cursor-pointer rounded-md border-2 bg-white shadow-sm"
+      class="font-rubik absolute right-3 mt-2 hidden -translate-y-4 transform cursor-pointer rounded-md border-2 bg-white opacity-0 shadow-sm transition-all duration-300"
     >
       <ul>
         <li class="text-md p-2 text-sm font-medium text-black">
