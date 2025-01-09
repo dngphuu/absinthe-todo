@@ -70,21 +70,31 @@
       class="font-rubik mx-auto mt-24 max-w-3xl rounded-md border bg-white shadow-xl"
     >
       <!-- Add task -->
-      <div class="m-4 flex justify-around">
+      <div
+        class="relative m-4 flex justify-around after:absolute after:left-0 after:top-full after:mt-1 after:h-px after:w-full after:border-0 after:bg-gray-300 after:transition-all after:duration-500 after:ease-in-out after:content-['']"
+        id="add-task-container"
+      >
         <input
           type="text"
           placeholder="Type here to add new task..."
-          class="mr-2 w-full rounded-md focus:outline-none"
+          class="mr-2 w-full focus:outline-none"
+          id="task-input"
         />
-        <button type="submit">
+        <button
+          type="submit"
+          title="Add task"
+          id="add-task-btn"
+          class="p-3 transition-all duration-500 ease-in-out hover:rounded-full hover:bg-slate-100"
+        >
           <svg
-            class="text-white-800 h-6 w-6"
+            class="text-white-800 h-6 w-6 transition-all duration-300 ease-in-out"
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"
             width="24"
             height="24"
             fill="#bdbdbd"
             viewBox="0 0 24 24"
+            id="add-task-icon"
           >
             <path
               fill-rule="evenodd"
@@ -94,10 +104,6 @@
           </svg>
         </button>
       </div>
-
-      <!-- Separator line -->
-
-      <hr id="separator" class="h-px border-0 bg-black" />
 
       <!-- Display tasks -->
       <div class="m-4">
@@ -114,7 +120,7 @@
               value="This is a task"
               class="task-content flex-1 border-none focus:outline-none"
             />
-            <button class="task-delete">
+            <button class="task-delete" title="Delete task">
               <svg
                 class="text-black-800 h-[24px] w-[24px]"
                 aria-hidden="true"
