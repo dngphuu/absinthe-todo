@@ -8,16 +8,14 @@
       type="image/x-icon"
       href="{{ url_for('static', filename='media_resources/favicon.ico') }}"
     />
-    <link rel="stylesheet" href="../static/css/output.css" />
-    <style>
-      .hidden {
-        display: none;
-      }
-
-      .show {
-        display: block;
-      }
-    </style>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/output.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css')}}"
+    />
     <title>Absinthe Todo</title>
   </head>
   <body class="bg-[#fafafa]">
@@ -131,5 +129,5 @@
       </div>
     </main>
   </body>
-  <script src="../static/js/app.js"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </html>
