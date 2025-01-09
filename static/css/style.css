@@ -5,3 +5,7 @@
 .show {
   display: block;
 }
+
+.done {
+  text-decoration: line-through;
+}
