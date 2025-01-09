@@ -13,14 +13,20 @@
       href="{{ url_for('static', filename='css/output.css')}}"
     />
     <title>Absinthe Todo Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body class="bg-[#fafafa]">
+  <body class="bg-[#fafafa] antialiased">
     <!-- Header Bar -->
     <header class="flex items-center justify-between bg-[#3d72fe] shadow-xl">
       <div>
         <!-- Logo and App name -->
         <h1
-          class="flex items-center text-nowrap p-3 px-5 font-sans text-2xl font-semibold text-white"
+          class="font-rubik flex items-center text-nowrap p-3 px-5 text-2xl font-medium text-white"
         >
           <img
             src="../static/media_resources/logopng.png"
@@ -34,10 +40,10 @@
 
     <!-- Login section -->
     <main
-      class="my-48 flex flex-col flex-nowrap items-center justify-center space-y-4 text-nowrap font-mono text-base font-medium text-white"
+      class="my-48 flex flex-col flex-nowrap items-center justify-center space-y-4 text-nowrap font-mono text-base text-white"
     >
       <h2
-        class="text-nowrap text-center font-sans text-3xl font-semibold text-black"
+        class="font-roboto text-nowrap text-center font-sans text-3xl font-medium text-black"
       >
         Login to create task
       </h2>
@@ -47,11 +53,11 @@
         class="w-96"
       />
 
-      <!-- LOGIN BUTTOn -->
+      <!-- LOGIN BUTTON -->
       <form action="{{ url_for('login') }}" method="post">
         <button
           type="submit"
-          class="group relative m-2 inline-flex w-96 cursor-pointer items-center justify-center rounded border bg-[#de5246] px-5 py-4 shadow-md transition-all duration-300 hover:bg-[#ef675d] hover:shadow-lg active:shadow-xl"
+          class="font-rubik group relative m-2 inline-flex w-96 cursor-pointer items-center justify-center rounded border bg-[#de5246] px-5 py-4 text-sm shadow-md transition-all duration-300 hover:bg-[#ef675d] hover:shadow-lg active:shadow-xl"
         >
           <span>
             <svg

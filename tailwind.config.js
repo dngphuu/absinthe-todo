@@ -1,10 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    content: [
-        "./templates/**/*.html", // Thêm dòng này để quét tất cả file HTML trong thư mục templates
-    ],
-    theme: {
-        extend: {},
+  content: ["./templates/**/*.html"],
+  theme: {
+    fontFamily: {
+      rubik: ["Rubik", "sans-serif"],
+      roboto: ["Roboto", "sans-serif"],
     },
-    plugins: [],
+  },
+  plugins: [],
 };
