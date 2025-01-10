@@ -771,6 +771,15 @@ video {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
 }
 
+.bg-\[\#\] {
+  background-color: #;
+}
+
+.bg-\[\#419ee5\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(65 158 229 / var(--tw-bg-opacity, 1));
+}
+
 .p-2 {
   padding: 0.5rem;
 }
@@ -941,6 +950,11 @@ video {
 .after\:content-\[\'\'\]::after {
   --tw-content: '';
   content: var(--tw-content);
+}
+
+.checked\:bg-\[\#419ee5\]:checked {
+  --tw-bg-opacity: 1;
+  background-color: rgb(65 158 229 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:rounded-full:hover {
