@@ -66,5 +66,3 @@ taskInput.addEventListener("input", function () {
     addTaskIcon.style.fill = "#bdbdbd";
   }
 });
-
-
