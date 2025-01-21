@@ -145,7 +145,7 @@ function createTaskElement(task) {
     <input
       type="text"
       value="${task.content}"
-      class="task-content flex-1 outline-none"
+      class="task-content flex-1 outline-none px-1"
     />
     <button
       class="task-delete p-2 transition-all duration-500 ease-in-out hover:rounded-full hover:bg-gray-100"
@@ -185,6 +185,36 @@ document.addEventListener("click", function (e) {
   if (e.target.closest(".task-delete")) {
     const taskId = e.target.closest("li").getAttribute("data-id");
     deleteTask(taskId);
+  }
+});
+
+/**
+ * Event delegation for handling task content editing
+ * Saves changes when user presses Enter or leaves the input field
+ */
+document.addEventListener("keypress", function (e) {
+  if (e.target.classList.contains("task-content") && e.key === "Enter") {
+    e.preventDefault();
+    e.target.blur();
+  }
+});
+
+document.addEventListener("focusout", function (e) {
+  if (e.target.classList.contains("task-content")) {
+    const taskId = e.target.closest("li").getAttribute("data-id");
+    const content = e.target.value.trim();
+    const completed = e.target
+      .closest("li")
+      .querySelector(".task-checkbox").checked;
+
+    // Only update if content has changed and is not empty
+    if (content !== "" && content !== e.target.defaultValue) {
+      updateTask(taskId, content, completed);
+      e.target.defaultValue = content; // Update default value to track changes
+    } else if (content === "") {
+      // Revert to previous value if empty
+      e.target.value = e.target.defaultValue;
+    }
   }
 });
 
