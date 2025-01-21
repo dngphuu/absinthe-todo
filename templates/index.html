@@ -71,13 +71,13 @@
     >
       <!-- Add task -->
       <div
-        class="relative mx-4 my-1 flex transform justify-around after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:w-full after:scale-x-0 after:bg-gray-300 after:transition-all after:duration-300 after:ease-in-out focus-within:after:scale-x-100 focus-within:after:bg-black hover:after:scale-x-100"
+        class="relative mx-4 my-1 flex justify-around after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:bg-gray-300 after:transition-all after:duration-300 after:ease-in-out focus-within:after:bg-black"
         id="add-task-container"
       >
         <input
           type="text"
           placeholder="Type here to add new task..."
-          class="mr-2 w-full outline-none transition-all"
+          class="mr-2 w-full outline-none"
           id="task-input"
         />
         <button
@@ -108,19 +108,33 @@
       <!-- Display tasks -->
       <div class="mx-6 mb-3 mt-1">
         <ul id="task-list">
+          {% for task in tasks %}
           <li
-            class="task-item relative mb-2 flex w-full items-center justify-between p-2"
+            data-id="{{ task.id }}"
+            class="task-item group relative flex w-full items-center justify-between py-1"
           >
             <input
               type="checkbox"
               class="task-checkbox mr-4 h-5 w-5 cursor-pointer"
+              {%
+              if
+              task.completed
+              %}
+              checked
+              {%
+              endif
+              %}
             />
             <input
               type="text"
-              value="This is a task"
-              class="task-content flex-1 outline-none after:absolute after:left-0 after:top-0 after:h-px after:w-full after:scale-x-0 after:bg-black after:transition-all after:duration-300 after:ease-in-out"
+              value="{{ task.content }}"
+              class="task-content flex-1 outline-none"
             />
-            <button class="task-delete" title="Delete task">
+            <button
+              class="task-delete p-2 transition-all duration-500 ease-in-out hover:rounded-full hover:bg-gray-100"
+              title="Delete task"
+              type="button"
+            >
               <svg
                 class="text-black-800 h-[24px] w-[24px]"
                 aria-hidden="true"
@@ -138,6 +152,7 @@
               </svg>
             </button>
           </li>
+          {% endfor %}
         </ul>
       </div>
     </main>
