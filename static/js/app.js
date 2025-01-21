@@ -1,5 +1,11 @@
-// SHOW LOGOUT MENU
+//=============================================================================
+// USER INTERFACE CONTROLS
+//=============================================================================
 
+/**
+ * Toggle visibility of logout menu with animation
+ * Uses CSS transitions for smooth animation effects
+ */
 document.getElementById("user-info").addEventListener("click", function () {
   const LOGOUT_MENU = document.getElementById("logout-menu");
 
@@ -18,13 +24,20 @@ document.getElementById("user-info").addEventListener("click", function () {
   }
 });
 
-// TASK MANAGEMENT
+//=============================================================================
+// TASK INPUT HANDLING
+//=============================================================================
+
+// DOM element references for task management
 const taskInput = document.getElementById("task-input");
 const addTaskIcon = document.getElementById("add-task-icon");
 const taskList = document.getElementById("task-list");
 const addTaskBtn = document.getElementById("add-task-btn");
 
-// Task button color change on input
+/**
+ * Changes add task button color based on input state
+ * Blue (#3d72fe) when input has content, grey (#bdbdbd) when empty
+ */
 taskInput.addEventListener("input", function () {
   if (taskInput.value.trim() !== "") {
     addTaskIcon.style.fill = "#3d72fe";
@@ -33,9 +46,17 @@ taskInput.addEventListener("input", function () {
   }
 });
 
-// || STYLING ||
+//=============================================================================
+// UI STYLING FUNCTIONS
+//=============================================================================
 
-// Reset add task style button
+/**
+ * Resets the task input form to its initial state:
+ * - Clears input field
+ * - Removes focus
+ * - Resets button color
+ * - Resets underline style
+ */
 function resetStyles() {
   taskInput.value = ""; // Clear input
   taskInput.blur(); // Remove focus
@@ -43,17 +64,44 @@ function resetStyles() {
   const addTaskContainer = document.getElementById("add-task-container");
   addTaskContainer.classList.remove("after:bg-black"); // Reset line color
 }
-// Add task input event listener for Enter key
+
+//=============================================================================
+// TASK CREATION HANDLERS
+//=============================================================================
+
+/**
+ * Handles task creation when Enter key is pressed
+ * @param {KeyboardEvent} event - The keyboard event object
+ */
 taskInput.addEventListener("keypress", async function (event) {
   if (event.key === "Enter") {
     event.preventDefault();
+    await handleAddTask();
+  }
+});
 
-    const taskContent = taskInput.value.trim();
-    if (!taskContent) return;
+/**
+ * Handles task creation when Add button is clicked
+ */
+addTaskBtn.addEventListener("click", async function () {
+  await handleAddTask();
+});
 
-    const formData = new FormData();
-    formData.append("task", taskContent);
+/**
+ * Central function for handling task creation
+ * - Validates input
+ * - Sends POST request to server
+ * - Updates UI on success
+ * - Handles errors
+ */
+async function handleAddTask() {
+  const taskContent = taskInput.value.trim();
+  if (!taskContent) return;
 
+  const formData = new FormData();
+  formData.append("task", taskContent);
+
+  try {
     const response = await fetch("/add-task", {
       method: "POST",
       body: formData,
@@ -62,38 +110,27 @@ taskInput.addEventListener("keypress", async function (event) {
     const data = await response.json();
 
     if (data.status === "success") {
-      const task = data.task;
-      const taskElement = createTaskElement(task);
+      const taskElement = createTaskElement(data.task);
       taskList.appendChild(taskElement);
       resetStyles();
+    } else {
+      alert(data.message);
     }
+  } catch (error) {
+    console.error("Error adding task:", error);
+    alert("An error occurred while adding the task.");
   }
-});
+}
 
-// || FUNCTIONALITY ||
-// Add task functionality
-addTaskBtn.addEventListener("click", async function () {
-  const taskContent = taskInput.value.trim();
-  if (!taskContent) return;
+//=============================================================================
+// TASK ELEMENT CREATION
+//=============================================================================
 
-  const formData = new FormData();
-  formData.append("task", taskContent);
-
-  const response = await fetch("/add-task", {
-    method: "POST",
-    body: formData,
-  });
-
-  const data = await response.json();
-
-  if (data.status === "success") {
-    const task = data.task;
-    const taskElement = createTaskElement(task);
-    taskList.appendChild(taskElement);
-    resetStyles();
-  }
-});
-
+/**
+ * Creates a new task list item element
+ * @param {Object} task - Task object containing id, content, and completed status
+ * @returns {HTMLLIElement} The created task list item element
+ */
 function createTaskElement(task) {
   const li = document.createElement("li");
   li.setAttribute("data-id", task.id);
@@ -108,7 +145,7 @@ function createTaskElement(task) {
     <input
       type="text"
       value="${task.content}"
-      class="task-content flex-1 outline-none"
+      class="task-content flex-1 outline-none px-1"
     />
     <button
       class="task-delete p-2 transition-all duration-500 ease-in-out hover:rounded-full hover:bg-gray-100"
@@ -123,39 +160,14 @@ function createTaskElement(task) {
   return li;
 }
 
-// Update task
-async function updateTask(taskId, updatedContent, completed) {
-  const formData = new FormData();
-  formData.append("id", taskId);
-  formData.append("content", updatedContent);
-  formData.append("completed", completed);
+//=============================================================================
+// TASK EVENT LISTENERS
+//=============================================================================
 
-  try {
-    const response = await fetch("/update-task", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (data.status === "success") {
-      // Update UI directly instead of reloading
-      const taskElement = document.querySelector(`li[data-id='${taskId}']`);
-      if (taskElement) {
-        taskElement.querySelector(".task-content").value = data.task.content;
-        taskElement.querySelector(".task-checkbox").checked =
-          data.task.completed;
-      }
-    } else {
-      alert(data.message);
-    }
-  } catch (error) {
-    console.error("Error updating task:", error);
-    alert("An error occurred while updating the task.");
-  }
-}
-
-// Event listener for checkbox changes to update task completion status
+/**
+ * Event delegation for handling checkbox state changes
+ * Updates task completion status on server
+ */
 document.addEventListener("change", function (e) {
   if (e.target.classList.contains("task-checkbox")) {
     const taskId = e.target.closest("li").getAttribute("data-id");
@@ -165,7 +177,10 @@ document.addEventListener("change", function (e) {
   }
 });
 
-// Event listener for delete button clicks to remove tasks
+/**
+ * Event delegation for handling task deletion
+ * Removes task from both server and UI
+ */
 document.addEventListener("click", function (e) {
   if (e.target.closest(".task-delete")) {
     const taskId = e.target.closest("li").getAttribute("data-id");
@@ -174,12 +189,45 @@ document.addEventListener("click", function (e) {
 });
 
 /**
- * Updates a task's content and completion status.
- * Automatically refreshes the page upon successful update.
- *
- * @param {string} taskId - The unique identifier of the task.
- * @param {string} updatedContent - The updated content of the task.
- * @param {boolean} completed - The updated completion status of the task.
+ * Event delegation for handling task content editing
+ * Saves changes when user presses Enter or leaves the input field
+ */
+document.addEventListener("keypress", function (e) {
+  if (e.target.classList.contains("task-content") && e.key === "Enter") {
+    e.preventDefault();
+    e.target.blur();
+  }
+});
+
+document.addEventListener("focusout", function (e) {
+  if (e.target.classList.contains("task-content")) {
+    const taskId = e.target.closest("li").getAttribute("data-id");
+    const content = e.target.value.trim();
+    const completed = e.target
+      .closest("li")
+      .querySelector(".task-checkbox").checked;
+
+    // Only update if content has changed and is not empty
+    if (content !== "" && content !== e.target.defaultValue) {
+      updateTask(taskId, content, completed);
+      e.target.defaultValue = content; // Update default value to track changes
+    } else if (content === "") {
+      // Revert to previous value if empty
+      e.target.value = e.target.defaultValue;
+    }
+  }
+});
+
+//=============================================================================
+// TASK OPERATIONS
+//=============================================================================
+
+/**
+ * Updates a task's content and completion status
+ * @param {string} taskId - Task identifier
+ * @param {string} updatedContent - New task content
+ * @param {boolean} completed - New completion status
+ * @throws {Error} When server communication fails
  */
 async function updateTask(taskId, updatedContent, completed) {
   const formData = new FormData();
@@ -213,10 +261,9 @@ async function updateTask(taskId, updatedContent, completed) {
 }
 
 /**
- * Deletes a task.
- * Automatically refreshes the page upon successful deletion.
- *
- * @param {string} taskId - The unique identifier of the task to be deleted.
+ * Deletes a task from the system
+ * @param {string} taskId - Task identifier
+ * @throws {Error} When server communication fails
  */
 async function deleteTask(taskId) {
   const formData = new FormData();
@@ -244,46 +291,3 @@ async function deleteTask(taskId) {
     alert("An error occurred while deleting the task.");
   }
 }
-
-/**
- * Adds a new task.
- *
- * @param {string} taskContent - The content of the new task.
- */
-async function addTask(taskContent) {
-  const formData = new FormData();
-  formData.append("task", taskContent);
-
-  try {
-    const response = await fetch("/add-task", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (data.status === "success") {
-      // Add new task to DOM
-      const taskElement = createTaskElement(data.task);
-      taskList.appendChild(taskElement);
-      resetStyles();
-    } else {
-      alert(data.message);
-    }
-  } catch (error) {
-    console.error("Error adding task:", error);
-    alert("An error occurred while adding the task.");
-  }
-}
-
-// Event listener for the add task form submission
-document
-  .getElementById("add-task-form")
-  .addEventListener("submit", function (e) {
-    e.preventDefault();
-    const taskInput = document.querySelector('input[name="task"]');
-    const taskContent = taskInput.value.trim();
-    if (taskContent) {
-      addTask(taskContent);
-    }
-  });

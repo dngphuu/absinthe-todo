@@ -70,40 +70,42 @@
       class="mx-auto mt-24 max-w-3xl rounded-md border bg-white font-rubik shadow-xl"
     >
       <!-- Add task -->
-      <div
-        class="relative mx-4 my-1 flex justify-around after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:bg-gray-300 after:transition-all after:duration-300 after:ease-in-out focus-within:after:bg-black"
-        id="add-task-container"
-      >
-        <input
-          type="text"
-          placeholder="Type here to add new task..."
-          class="mr-2 w-full outline-none"
-          id="task-input"
-        />
-        <button
-          type="submit"
-          title="Add task"
-          id="add-task-btn"
-          class="p-3 transition-all duration-500 ease-in-out hover:rounded-full hover:bg-gray-100"
+      <form id="add-task-form">
+        <div
+          class="relative mx-4 my-1 flex justify-around after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:bg-gray-300 after:transition-all after:duration-300 after:ease-in-out focus-within:after:bg-black"
+          id="add-task-container"
         >
-          <svg
-            class="text-white-800 h-6 w-6 transition-all duration-300 ease-in-out"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="#bdbdbd"
-            viewBox="0 0 24 24"
-            id="add-task-icon"
+          <input
+            type="text"
+            placeholder="Type here to add new task..."
+            class="mr-2 w-full outline-none"
+            id="task-input"
+          />
+          <button
+            type="submit"
+            title="Add task"
+            id="add-task-btn"
+            class="p-3 transition-all duration-500 ease-in-out hover:rounded-full hover:bg-gray-100"
           >
-            <path
-              fill-rule="evenodd"
-              d="M3 4a1 1 0 0 0-.822 1.57L6.632 12l-4.454 6.43A1 1 0 0 0 3 20h13.153a1 1 0 0 0 .822-.43l4.847-7a1 1 0 0 0 0-1.14l-4.847-7a1 1 0 0 0-.822-.43H3Z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </button>
-      </div>
+            <svg
+              class="text-white-800 h-6 w-6 transition-all duration-300 ease-in-out"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="#bdbdbd"
+              viewBox="0 0 24 24"
+              id="add-task-icon"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3 4a1 1 0 0 0-.822 1.57L6.632 12l-4.454 6.43A1 1 0 0 0 3 20h13.153a1 1 0 0 0 .822-.43l4.847-7a1 1 0 0 0 0-1.14l-4.847-7a1 1 0 0 0-.822-.43H3Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+      </form>
 
       <!-- Display tasks -->
       <div class="mx-6 mb-3 mt-1">
@@ -128,7 +130,7 @@
             <input
               type="text"
               value="{{ task.content }}"
-              class="task-content flex-1 outline-none"
+              class="task-content flex-1 px-1 outline-none"
             />
             <button
               class="task-delete p-2 transition-all duration-500 ease-in-out hover:rounded-full hover:bg-gray-100"
