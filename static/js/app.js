@@ -1,6 +1,19 @@
 //=============================================================================
+// CONSTANTS & DOM ELEMENTS
+//=============================================================================
+// Add all DOM element references here
+
+const userInfo = document.getElementById('user-info');
+const logoutMenu = document.getElementById('logout-menu');
+const taskInput = document.getElementById("task-input");
+const addTaskIcon = document.getElementById("add-task-icon");
+const taskList = document.getElementById("task-list");
+const addTaskBtn = document.getElementById("add-task-btn");
+
+//=============================================================================
 // USER INTERFACE CONTROLS
 //=============================================================================
+// User menu and logout functionality
 
 /**
  * Toggle visibility of logout menu with animation
@@ -24,15 +37,26 @@ document.getElementById("user-info").addEventListener("click", function () {
   }
 });
 
+// Logout menu functionality
+if (userInfo && logoutMenu) {
+    userInfo.addEventListener('click', () => {
+        logoutMenu.classList.toggle('hidden');
+        logoutMenu.classList.toggle('opacity-0');
+        logoutMenu.classList.toggle('-translate-y-4');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!userInfo.contains(e.target) && !logoutMenu.contains(e.target)) {
+            logoutMenu.classList.add('hidden', 'opacity-0', '-translate-y-4');
+        }
+    });
+}
+
 //=============================================================================
 // TASK INPUT HANDLING
 //=============================================================================
-
-// DOM element references for task management
-const taskInput = document.getElementById("task-input");
-const addTaskIcon = document.getElementById("add-task-icon");
-const taskList = document.getElementById("task-list");
-const addTaskBtn = document.getElementById("add-task-btn");
+// Task input and validation logic
 
 /**
  * Changes add task button color based on input state
@@ -47,8 +71,9 @@ taskInput.addEventListener("input", function () {
 });
 
 //=============================================================================
-// UI STYLING FUNCTIONS
+// TASK OPERATIONS (CRUD)
 //=============================================================================
+// Task creation, update, and deletion functions
 
 /**
  * Resets the task input form to its initial state:
@@ -64,10 +89,6 @@ function resetStyles() {
   const addTaskContainer = document.getElementById("add-task-container");
   addTaskContainer.classList.remove("after:bg-black"); // Reset line color
 }
-
-//=============================================================================
-// TASK CREATION HANDLERS
-//=============================================================================
 
 /**
  * Handles task creation when Enter key is pressed
@@ -122,10 +143,6 @@ async function handleAddTask() {
   }
 }
 
-//=============================================================================
-// TASK ELEMENT CREATION
-//=============================================================================
-
 /**
  * Creates a new task list item element
  * @param {Object} task - Task object containing id, content, and completed status
@@ -159,68 +176,6 @@ function createTaskElement(task) {
   `;
   return li;
 }
-
-//=============================================================================
-// TASK EVENT LISTENERS
-//=============================================================================
-
-/**
- * Event delegation for handling checkbox state changes
- * Updates task completion status on server
- */
-document.addEventListener("change", function (e) {
-  if (e.target.classList.contains("task-checkbox")) {
-    const taskId = e.target.closest("li").getAttribute("data-id");
-    const completed = e.target.checked;
-    const content = e.target.closest("li").querySelector(".task-content").value;
-    updateTask(taskId, content, completed);
-  }
-});
-
-/**
- * Event delegation for handling task deletion
- * Removes task from both server and UI
- */
-document.addEventListener("click", function (e) {
-  if (e.target.closest(".task-delete")) {
-    const taskId = e.target.closest("li").getAttribute("data-id");
-    deleteTask(taskId);
-  }
-});
-
-/**
- * Event delegation for handling task content editing
- * Saves changes when user presses Enter or leaves the input field
- */
-document.addEventListener("keypress", function (e) {
-  if (e.target.classList.contains("task-content") && e.key === "Enter") {
-    e.preventDefault();
-    e.target.blur();
-  }
-});
-
-document.addEventListener("focusout", function (e) {
-  if (e.target.classList.contains("task-content")) {
-    const taskId = e.target.closest("li").getAttribute("data-id");
-    const content = e.target.value.trim();
-    const completed = e.target
-      .closest("li")
-      .querySelector(".task-checkbox").checked;
-
-    // Only update if content has changed and is not empty
-    if (content !== "" && content !== e.target.defaultValue) {
-      updateTask(taskId, content, completed);
-      e.target.defaultValue = content; // Update default value to track changes
-    } else if (content === "") {
-      // Revert to previous value if empty
-      e.target.value = e.target.defaultValue;
-    }
-  }
-});
-
-//=============================================================================
-// TASK OPERATIONS
-//=============================================================================
 
 /**
  * Updates a task's content and completion status
@@ -291,3 +246,67 @@ async function deleteTask(taskId) {
     alert("An error occurred while deleting the task.");
   }
 }
+
+//=============================================================================
+// EVENT LISTENERS
+//=============================================================================
+// All event listeners for task operations
+
+/**
+ * Event delegation for handling checkbox state changes
+ * Updates task completion status on server
+ */
+document.addEventListener("change", function (e) {
+  if (e.target.classList.contains("task-checkbox")) {
+    const taskId = e.target.closest("li").getAttribute("data-id");
+    const completed = e.target.checked;
+    const content = e.target.closest("li").querySelector(".task-content").value;
+    updateTask(taskId, content, completed);
+  }
+});
+
+/**
+ * Event delegation for handling task deletion
+ * Removes task from both server and UI
+ */
+document.addEventListener("click", function (e) {
+  if (e.target.closest(".task-delete")) {
+    const taskId = e.target.closest("li").getAttribute("data-id");
+    deleteTask(taskId);
+  }
+});
+
+/**
+ * Event delegation for handling task content editing
+ * Saves changes when user presses Enter or leaves the input field
+ */
+document.addEventListener("keypress", function (e) {
+  if (e.target.classList.contains("task-content") && e.key === "Enter") {
+    e.preventDefault();
+    e.target.blur();
+  }
+});
+
+document.addEventListener("focusout", function (e) {
+  if (e.target.classList.contains("task-content")) {
+    const taskId = e.target.closest("li").getAttribute("data-id");
+    const content = e.target.value.trim();
+    const completed = e.target
+      .closest("li")
+      .querySelector(".task-checkbox").checked;
+
+    // Only update if content has changed and is not empty
+    if (content !== "" && content !== e.target.defaultValue) {
+      updateTask(taskId, content, completed);
+      e.target.defaultValue = content; // Update default value to track changes
+    } else if (content === "") {
+      // Revert to previous value if empty
+      e.target.value = e.target.defaultValue;
+    }
+  }
+});
+
+//=============================================================================
+// UTILITY FUNCTIONS
+//=============================================================================
+// Helper functions for UI updates and data handling
