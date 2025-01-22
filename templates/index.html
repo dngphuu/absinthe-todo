@@ -37,14 +37,12 @@
         </h1>
       </div>
 
-      <!-- User Avt and Name -->
+      <!-- Updated User Info section -->
       <div id="user-info">
-        <button
-          class="mr-2 flex items-center transition-all duration-300 focus:outline-none active:scale-110 active:opacity-80"
-        >
-          <span class="mr-3 font-roboto text-sm text-white">John Doe</span>
+        <button class="mr-2 flex items-center transition-all duration-300 focus:outline-none active:scale-110 active:opacity-80">
+          <span class="mr-3 font-roboto text-sm text-white">{{ user.name }}</span>
           <img
-            src="https://via.placeholder.com/40"
+            src="{{ user.picture }}"
             alt="User Avatar"
             id="user-avatar"
             class="hidden h-10 w-10 rounded-full sm:block"
