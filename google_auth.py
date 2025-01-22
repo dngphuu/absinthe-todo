@@ -71,10 +71,30 @@ class GoogleAuth:
             'scopes': flow.credentials.scopes
         }
 
+    def refresh_credentials(self, credentials_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """Refresh expired credentials"""
+        try:
+            credentials = Credentials(**credentials_dict)
+            if credentials.expired:
+                credentials.refresh(Request())
+                return {
+                    'token': credentials.token,
+                    'refresh_token': credentials.refresh_token,
+                    'token_uri': credentials.token_uri,
+                    'client_id': credentials.client_id,
+                    'client_secret': credentials.client_secret,
+                    'scopes': credentials.scopes
+                }
+            return credentials_dict
+        except Exception as e:
+            raise Exception(f"Failed to refresh credentials: {str(e)}")
+
     def get_user_info(self, credentials_dict: Dict[str, Any]) -> Dict[str, Any]:
         """Fetch user information using OAuth2 credentials"""
-        credentials = Credentials(**credentials_dict)
         try:
+            # Try to refresh credentials if expired
+            credentials_dict = self.refresh_credentials(credentials_dict)
+            credentials = Credentials(**credentials_dict)
             service = build('oauth2', 'v2', credentials=credentials)
             user_info = service.userinfo().get().execute()
             return {

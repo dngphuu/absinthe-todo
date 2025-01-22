@@ -17,14 +17,21 @@ import json
 def get_client_secrets():
     """Get client secrets from Repl.it environment or file"""
     if 'CLIENT_SECRET' in os.environ:
-        return json.loads(os.environ['CLIENT_SECRET'])
+        # For Repl.it deployment
+        client_secrets_content = json.loads(os.environ['CLIENT_SECRET'])
+        # Create temporary file for Google OAuth library
+        temp_file = os.path.join(pathlib.Path(__file__).parent, "temp_client_secrets.json")
+        with open(temp_file, 'w') as f:
+            json.dump(client_secrets_content, f)
+        return temp_file
     return os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
 
 #=============================================================================
 # APPLICATION INITIALIZATION
 #=============================================================================
 app = Flask(__name__, template_folder=Config.TEMPLATE_FOLDER)
-app.secret_key = Config.SECRET_KEY
+app.secret_key = os.environ.get('SECRET_KEY', Config.SECRET_KEY)  # Add this line
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # Only for development
 client_secrets = get_client_secrets()
 
 # Service instances

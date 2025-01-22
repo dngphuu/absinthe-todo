@@ -40,9 +40,11 @@
       <!-- Updated User Info section -->
       <div id="user-info">
         <button class="mr-2 flex items-center transition-all duration-300 focus:outline-none active:scale-110 active:opacity-80">
-          <span class="mr-3 font-roboto text-sm text-white">{{ user.name }}</span>
+          <span class="mr-3 font-roboto text-sm text-white">
+            {{ user.name if user and user.name else 'User' }}
+          </span>
           <img
-            src="{{ user.picture }}"
+            src="{{ user.picture if user and user.picture else url_for('static', filename='media_resources/default-avatar.png') }}"
             alt="User Avatar"
             id="user-avatar"
             class="hidden h-10 w-10 rounded-full sm:block"
