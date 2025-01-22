@@ -17,38 +17,50 @@ const addTaskBtn = document.getElementById("add-task-btn");
 
 /**
  * Toggle visibility of logout menu with animation
- * Uses CSS transitions for smooth animation effects
  */
-document.getElementById("user-info").addEventListener("click", function () {
-  const LOGOUT_MENU = document.getElementById("logout-menu");
+function toggleLogoutMenu(show) {
+    if (!userInfo || !logoutMenu) return;
+    
+    if (show) {
+        logoutMenu.classList.remove('hidden');
+        // Use requestAnimationFrame to ensure proper transition
+        requestAnimationFrame(() => {
+            logoutMenu.classList.remove('-translate-y-4', 'opacity-0');
+            logoutMenu.classList.add('translate-y-0', 'opacity-100');
+        });
+    } else {
+        logoutMenu.classList.add('-translate-y-4', 'opacity-0');
+        logoutMenu.classList.remove('translate-y-0', 'opacity-100');
+        setTimeout(() => logoutMenu.classList.add('hidden'), 300);
+    }
+}
 
-  if (LOGOUT_MENU.classList.contains("hidden")) {
-    LOGOUT_MENU.classList.remove("hidden");
-    setTimeout(() => {
-      LOGOUT_MENU.classList.remove("-translate-y-4", "opacity-0");
-      LOGOUT_MENU.classList.add("translate-y-0", "opacity-100");
-    }, 10);
-  } else {
-    LOGOUT_MENU.classList.add("-translate-y-4", "opacity-0");
-    LOGOUT_MENU.classList.remove("translate-y-0", "opacity-100");
-    setTimeout(() => {
-      LOGOUT_MENU.classList.add("hidden");
-    }, 300);
-  }
-});
-
-// Logout menu functionality
 if (userInfo && logoutMenu) {
-    userInfo.addEventListener('click', () => {
-        logoutMenu.classList.toggle('hidden');
-        logoutMenu.classList.toggle('opacity-0');
-        logoutMenu.classList.toggle('-translate-y-4');
+    let isMenuOpen = false;
+
+    userInfo.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isMenuOpen = !isMenuOpen;
+        toggleLogoutMenu(isMenuOpen);
+    });
+
+    // Handle keyboard navigation
+    userInfo.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            isMenuOpen = !isMenuOpen;
+            toggleLogoutMenu(isMenuOpen);
+        } else if (e.key === 'Escape' && isMenuOpen) {
+            isMenuOpen = false;
+            toggleLogoutMenu(false);
+        }
     });
 
     // Close menu when clicking outside
     document.addEventListener('click', (e) => {
-        if (!userInfo.contains(e.target) && !logoutMenu.contains(e.target)) {
-            logoutMenu.classList.add('hidden', 'opacity-0', '-translate-y-4');
+        if (isMenuOpen && !userInfo.contains(e.target) && !logoutMenu.contains(e.target)) {
+            isMenuOpen = false;
+            toggleLogoutMenu(false);
         }
     });
 }

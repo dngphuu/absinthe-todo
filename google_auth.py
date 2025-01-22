@@ -5,40 +5,44 @@ from typing import Dict, Any, Optional, Tuple
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload, MediaIoBaseDownload
+from google.auth.transport.requests import Request
+from google.auth import exceptions as google_exceptions
 import json
-import io
+import os
+from pathlib import Path
 
 class GoogleAuth:
-    """Handles Google OAuth2 authentication and Google Drive operations
+    """Handles Google OAuth2 authentication and user information
     
-    This class manages all Google-related operations including:
+    This class manages Google-related operations including:
     - OAuth2 authentication flow
     - User information retrieval
-    - Google Drive file synchronization
     """
     
     #=========================================================================
     # CLASS CONFIGURATION
     #=========================================================================
     SCOPES = [
-        'https://www.googleapis.com/auth/drive.file',
         'https://www.googleapis.com/auth/userinfo.profile',
         'https://www.googleapis.com/auth/userinfo.email',
         'openid'
     ]
 
     def __init__(self, client_secrets_file: str):
-        self.client_secrets_file = client_secrets_file
+        """
+        Initializes the GoogleAuth instance.
 
-    #=========================================================================
-    # AUTHENTICATION METHODS
-    #=========================================================================
+        Args:
+            client_secrets_file (str): Path to the client secrets JSON file.
+        """
+        self.client_secrets_file = client_secrets_file
+        self.credentials_path = os.path.join(Path.home(), '.todo_app_credentials.json')
+
     def create_auth_flow(self, redirect_uri: str) -> Tuple[str, str]:
         """Initializes OAuth2 authentication flow
         
         Args:
-            redirect_uri (str): OAuth2 callback URL
+            redirect_uri (str): The URI to which the user will be redirected after authentication.
         Returns:
             Tuple[str, str]: Authorization URL and state token
         """
@@ -62,7 +66,7 @@ class GoogleAuth:
             redirect_uri=redirect_uri
         )
         flow.fetch_token(authorization_response=authorization_response)
-        return {
+        credentials_dict = {
             'token': flow.credentials.token,
             'refresh_token': flow.credentials.refresh_token,
             'token_uri': flow.credentials.token_uri,
@@ -70,14 +74,18 @@ class GoogleAuth:
             'client_secret': flow.credentials.client_secret,
             'scopes': flow.credentials.scopes
         }
+        
+        # Save credentials securely
+        self.save_credentials(credentials_dict)
+        return credentials_dict
 
     def refresh_credentials(self, credentials_dict: Dict[str, Any]) -> Dict[str, Any]:
         """Refresh expired credentials"""
         try:
             credentials = Credentials(**credentials_dict)
-            if credentials.expired:
+            if credentials.expired and credentials.refresh_token:
                 credentials.refresh(Request())
-                return {
+                updated_credentials = {
                     'token': credentials.token,
                     'refresh_token': credentials.refresh_token,
                     'token_uri': credentials.token_uri,
@@ -85,90 +93,76 @@ class GoogleAuth:
                     'client_secret': credentials.client_secret,
                     'scopes': credentials.scopes
                 }
+                # Update cached credentials
+                self.save_credentials(updated_credentials)
+                return updated_credentials
             return credentials_dict
         except Exception as e:
             raise Exception(f"Failed to refresh credentials: {str(e)}")
 
     def get_user_info(self, credentials_dict: Dict[str, Any]) -> Dict[str, Any]:
-        """Fetch user information using OAuth2 credentials"""
+        """Get Google user information
+        
+        Args:
+            credentials_dict (Dict[str, Any]): The credentials dictionary
+        Returns:
+            Dict[str, Any]: User information including email and name
+        """
         try:
-            # Try to refresh credentials if expired
-            credentials_dict = self.refresh_credentials(credentials_dict)
             credentials = Credentials(**credentials_dict)
             service = build('oauth2', 'v2', credentials=credentials)
             user_info = service.userinfo().get().execute()
             return {
-                'name': user_info.get('name'),
                 'email': user_info.get('email'),
+                'name': user_info.get('name'),
                 'picture': user_info.get('picture')
             }
         except Exception as e:
             raise Exception(f"Failed to get user info: {str(e)}")
 
-    #=========================================================================
-    # GOOGLE DRIVE OPERATIONS
-    #=========================================================================
-    def sync_drive_data(self, credentials_dict: Dict[str, Any], data: Dict) -> Optional[Dict]:
-        """Synchronizes local data with Google Drive
+    def validate_credentials(self, credentials_dict: Dict[str, Any]) -> bool:
+        """Check if credentials are valid and not expired
         
         Args:
-            credentials_dict (Dict): OAuth2 credentials
-            data (Dict): Local data to sync
+            credentials_dict (Dict[str, Any]): The credentials dictionary
         Returns:
-            Optional[Dict]: Synchronized data or None on failure
+            bool: True if credentials are valid, False otherwise
         """
-        credentials = Credentials(**credentials_dict)
-        drive_service = build('drive', 'v3', credentials=credentials)
-
         try:
-            # Search for existing file
-            results = drive_service.files().list(
-                q="name='data.json'",
-                spaces='drive'
-            ).execute()
-            files = results.get('files', [])
+            credentials = Credentials(**credentials_dict)
+            if not credentials.valid:
+                if credentials.expired and credentials.refresh_token:
+                    credentials_dict = self.refresh_credentials(credentials_dict)
+                    return True
+                return False
+            return True
+        except Exception:
+            return False
 
-            if files:
-                return self._download_file(drive_service, files[0]['id'])
-            else:
-                return self._upload_file(drive_service, data)
-        except Exception as e:
-            raise Exception(f"Drive sync failed: {str(e)}")
-
-    #=========================================================================
-    # HELPER METHODS
-    #=========================================================================
-    def _download_file(self, drive_service: Any, file_id: str) -> Dict:
-        """Internal method for file download from Drive
+    def save_credentials(self, credentials_dict: Dict[str, Any]) -> None:
+        """Save credentials to a secure location
         
         Args:
-            drive_service (Any): Google Drive service instance
-            file_id (str): ID of file to download
-        Returns:
-            Dict: Downloaded and parsed file content
+            credentials_dict (Dict[str, Any]): The credentials to save
         """
-        request = drive_service.files().get_media(fileId=file_id)
-        file = io.BytesIO()
-        downloader = MediaIoBaseDownload(file, request)
-        
-        done = False
-        while not done:
-            _, done = downloader.next_chunk()
-        
-        file.seek(0)
-        return json.loads(file.read().decode())
+        try:
+            with open(self.credentials_path, 'w') as f:
+                json.dump(credentials_dict, f)
+        except Exception as e:
+            raise Exception(f"Failed to save credentials: {str(e)}")
 
-    def _upload_file(self, drive_service: Any, data: Dict) -> Dict:
-        """Upload file to Google Drive"""
-        file_metadata = {'name': 'data.json'}
-        media = MediaIoBaseUpload(
-            io.BytesIO(json.dumps(data).encode()),
-            mimetype='application/json',
-            resumable=True
-        )
-        drive_service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id'
-        ).execute()
-        return data
+    def load_credentials(self) -> Optional[Dict[str, Any]]:
+        """Load saved credentials if they exist
+        
+        Returns:
+            Optional[Dict[str, Any]]: The loaded credentials or None
+        """
+        try:
+            if os.path.exists(self.credentials_path):
+                with open(self.credentials_path, 'r') as f:
+                    credentials_dict = json.load(f)
+                if self.validate_credentials(credentials_dict):
+                    return credentials_dict
+        except Exception:
+            pass
+        return None
