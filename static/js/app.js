@@ -3,12 +3,13 @@
 //=============================================================================
 // Add all DOM element references here
 
-const userInfo = document.getElementById('user-info');
-const logoutMenu = document.getElementById('logout-menu');
+const userInfo = document.getElementById("user-info");
+const logoutMenu = document.getElementById("logout-menu");
 const taskInput = document.getElementById("task-input");
 const addTaskIcon = document.getElementById("add-task-icon");
 const taskList = document.getElementById("task-list");
 const addTaskBtn = document.getElementById("add-task-btn");
+const syncButton = document.getElementById("sync-button");
 
 //=============================================================================
 // USER INTERFACE CONTROLS
@@ -17,40 +18,56 @@ const addTaskBtn = document.getElementById("add-task-btn");
 
 /**
  * Toggle visibility of logout menu with animation
- * Uses CSS transitions for smooth animation effects
  */
-document.getElementById("user-info").addEventListener("click", function () {
-  const LOGOUT_MENU = document.getElementById("logout-menu");
+function toggleLogoutMenu(show) {
+  if (!userInfo || !logoutMenu) return;
 
-  if (LOGOUT_MENU.classList.contains("hidden")) {
-    LOGOUT_MENU.classList.remove("hidden");
-    setTimeout(() => {
-      LOGOUT_MENU.classList.remove("-translate-y-4", "opacity-0");
-      LOGOUT_MENU.classList.add("translate-y-0", "opacity-100");
-    }, 10);
+  if (show) {
+    logoutMenu.classList.remove("hidden");
+    // Use requestAnimationFrame to ensure proper transition
+    requestAnimationFrame(() => {
+      logoutMenu.classList.remove("-translate-y-4", "opacity-0");
+      logoutMenu.classList.add("translate-y-0", "opacity-100");
+    });
   } else {
-    LOGOUT_MENU.classList.add("-translate-y-4", "opacity-0");
-    LOGOUT_MENU.classList.remove("translate-y-0", "opacity-100");
-    setTimeout(() => {
-      LOGOUT_MENU.classList.add("hidden");
-    }, 300);
+    logoutMenu.classList.add("-translate-y-4", "opacity-0");
+    logoutMenu.classList.remove("translate-y-0", "opacity-100");
+    setTimeout(() => logoutMenu.classList.add("hidden"), 300);
   }
-});
+}
 
-// Logout menu functionality
 if (userInfo && logoutMenu) {
-    userInfo.addEventListener('click', () => {
-        logoutMenu.classList.toggle('hidden');
-        logoutMenu.classList.toggle('opacity-0');
-        logoutMenu.classList.toggle('-translate-y-4');
-    });
+  let isMenuOpen = false;
 
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!userInfo.contains(e.target) && !logoutMenu.contains(e.target)) {
-            logoutMenu.classList.add('hidden', 'opacity-0', '-translate-y-4');
-        }
-    });
+  userInfo.addEventListener("click", (e) => {
+    e.stopPropagation();
+    isMenuOpen = !isMenuOpen;
+    toggleLogoutMenu(isMenuOpen);
+  });
+
+  // Handle keyboard navigation
+  userInfo.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      isMenuOpen = !isMenuOpen;
+      toggleLogoutMenu(isMenuOpen);
+    } else if (e.key === "Escape" && isMenuOpen) {
+      isMenuOpen = false;
+      toggleLogoutMenu(false);
+    }
+  });
+
+  // Close menu when clicking outside
+  document.addEventListener("click", (e) => {
+    if (
+      isMenuOpen &&
+      !userInfo.contains(e.target) &&
+      !logoutMenu.contains(e.target)
+    ) {
+      isMenuOpen = false;
+      toggleLogoutMenu(false);
+    }
+  });
 }
 
 //=============================================================================
@@ -310,3 +327,99 @@ document.addEventListener("focusout", function (e) {
 // UTILITY FUNCTIONS
 //=============================================================================
 // Helper functions for UI updates and data handling
+
+/**
+ * Shows loading state on sync button
+ * @param {boolean} isLoading - Whether to show loading state
+ * @returns {string} Original button content if loading is enabled
+ */
+function toggleSyncButtonLoading(isLoading) {
+  if (!syncButton) return;
+
+  const originalContent = syncButton.innerHTML;
+  if (isLoading) {
+    syncButton.disabled = true;
+    syncButton.innerHTML = `
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="ml-2 font-rubik text-sm">Syncing...</span>
+        `;
+  } else {
+    syncButton.disabled = false;
+    syncButton.innerHTML = originalContent;
+  }
+  return originalContent;
+}
+
+/**
+ * Syncs tasks with Google Drive
+ * - Shows loading state
+ * - Handles errors with user feedback
+ * - Updates task list on success
+ */
+async function syncTasks() {
+  if (!syncButton) return;
+
+  const originalContent = `
+        <svg class="h-6 w-6 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"/>
+        </svg>
+        <span class="font-rubik text-sm text-white">Sync tasks</span>
+    `;
+
+  // Show loading state with consistent sizing
+  syncButton.disabled = true;
+  syncButton.innerHTML = `
+        <svg class="h-6 w-6 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="ml-2 font-rubik text-sm text-white">Syncing...</span>
+    `;
+
+  try {
+    const response = await fetch("/sync-tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+      if (Array.isArray(data.tasks)) {
+        taskList.innerHTML = "";
+        data.tasks.forEach((task) => {
+          const taskElement = createTaskElement(task);
+          taskList.appendChild(taskElement);
+        });
+      }
+      alert("Tasks synced successfully!");
+    } else {
+      throw new Error(data.message || "Sync failed");
+    }
+  } catch (error) {
+    console.error("Error syncing tasks:", error);
+    alert(`Sync failed: ${error.message}`);
+  } finally {
+    // Always restore original button state
+    syncButton.disabled = false;
+    syncButton.innerHTML = originalContent;
+  }
+}
+
+// Update sync button event listener
+if (syncButton) {
+  syncButton.addEventListener("click", async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await syncTasks();
+  });
+}

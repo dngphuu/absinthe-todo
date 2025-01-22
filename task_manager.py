@@ -1,56 +1,55 @@
 import json
-import uuid
 import os
-from config import Config
+from pathlib import Path
+from uuid import uuid4
 
 class TaskManager:
     def __init__(self):
-        self.data_file = Config.DATA_FILE
+        self.tasks = []
+        self.tasks_file = os.path.join(Path(__file__).parent, 'tasks.json')
 
     def load_tasks(self):
-        if not os.path.exists(self.data_file):
-            with open(self.data_file, "w") as f:
-                json.dump([], f)
-            return []
-        
         try:
-            with open(self.data_file, "r") as f:
-                content = f.read().strip()
-                return json.loads(content) if content else []
-        except json.JSONDecodeError:
-            return []
+            if os.path.exists(self.tasks_file):
+                with open(self.tasks_file, 'r') as f:
+                    self.tasks = json.load(f)
+            return self.tasks or []  # Return empty list if tasks is None
+        except Exception as e:
+            print(f"Error loading tasks: {str(e)}")
+            return []  # Return empty list on error
 
-    def save_tasks(self, tasks):
-        with open(self.data_file, "w") as f:
-            json.dump(tasks, f, indent=2)
+    def save_tasks(self):
+        try:
+            with open(self.tasks_file, 'w') as f:
+                json.dump(self.tasks, f)
+        except Exception as e:
+            print(f"Error saving tasks: {str(e)}")
 
     def add_task(self, content):
-        tasks = self.load_tasks()
-        new_task = {
-            "id": str(uuid.uuid4()),
-            "content": content,
-            "completed": False
+        task = {
+            'id': str(uuid4()),  # Use UUID instead of incremental number
+            'content': content,
+            'completed': False
         }
-        tasks.append(new_task)
-        self.save_tasks(tasks)
-        return new_task
+        self.tasks.append(task)
+        self.save_tasks()
+        return task
 
     def update_task(self, task_id, content=None, completed=None):
-        tasks = self.load_tasks()
-        for task in tasks:
-            if task["id"] == task_id:
+        for task in self.tasks:
+            if str(task['id']) == str(task_id):
                 if content is not None:
-                    task["content"] = content
+                    task['content'] = content
                 if completed is not None:
-                    task["completed"] = completed
-                self.save_tasks(tasks)
+                    task['completed'] = completed
+                self.save_tasks()
                 return task
         return None
 
     def delete_task(self, task_id):
-        tasks = self.load_tasks()
-        updated_tasks = [task for task in tasks if task["id"] != task_id]
-        if len(updated_tasks) != len(tasks):
-            self.save_tasks(updated_tasks)
+        initial_length = len(self.tasks)
+        self.tasks = [t for t in self.tasks if str(t['id']) != str(task_id)]
+        if len(self.tasks) < initial_length:
+            self.save_tasks()
             return True
         return False

@@ -1,103 +1,103 @@
-# Absinthe Todo App
+# Todo App with Google Drive Sync
 
-A modern todo application with Google OAuth authentication and Google Drive sync functionality.
+A modern todo application built with Flask and JavaScript that helps you manage tasks with Google Drive synchronization.
 
-## Table of Contents
-- [Absinthe Todo App](#absinthe-todo-app)
-  - [Table of Contents](#table-of-contents)
-  - [Features](#features)
-  - [Prerequisites](#prerequisites)
-  - [Project Structure](#project-structure)
-  - [Setup \& Deployment on Repl.it](#setup--deployment-on-replit)
-  - [Development Notes](#development-notes)
-  - [Security Notes](#security-notes)
+## Key Features
 
-## Features
-- Google OAuth2 authentication
-- Task management (Create, Read, Update, Delete)
-- Google Drive sync for task data
-- Modern UI with Tailwind CSS
-- Responsive design
+- 🔐 Secure Google account authentication
+- ✨ Clean and modern interface
+- 📱 Fully responsive design
+- ⌨️ Keyboard accessibility
+- 🔄 Google Drive sync
+- 🎯 Instant task updates
+
+## Tech Stack
+
+- Backend: Python/Flask
+- Frontend: JavaScript, Tailwind CSS
+- Authentication: Google OAuth2
+- Storage: Google Drive, local
 
 ## Prerequisites
+
 - Python 3.8+
-- pip (Python package manager)
-- Node.js and npm (for Tailwind CSS)
-- Google Cloud Console account
+- Node.js 16+
+- Google account
+- Google Cloud Platform project (for API access) (development)
 
-## Project Structure
+## Quick Start
+
+1. Clone and setup:
+
+Run install script:
+
+- INSTALL.ps1 (Windows)
+- INSTALL.sh (Linux/MacOS)
+
+2. Configure Google OAuth (Optional):
+
+- Create a project in [Google Cloud Console](https://console.cloud.google.com)
+- Enable Google Drive API
+- Create OAuth 2.0 credentials
+- Edit GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in config.py
+
+3. Environment setup (Optional):
+
+```bash
+cp .env.example .env
+# Edit .env with your settings
 ```
-Todo app/
-├── static/
-│   ├── css/
-│   │   └── output.css
-│   ├── js/
-│   │   └── app.js
-│   └── media_resources/
-│       ├── favicon.ico
-│       ├── logopng.png
-│       └── onboarding.svg
-├── templates/
-│   ├── index.html
-│   └── login.html
-├── app.py
-├── config.py
-├── google_auth.py
-├── task_manager.py
-├── client_secret.json
-├── requirements.txt
-└── README.md
+
+4. Build and run:
+
+```bash
+# Build CSS
+npm run build
+
+# Start server
+python app.py
 ```
 
-## Setup & Deployment on Repl.it
+Visit `http://localhost:8080` to use the app!
 
-1. Create a new Python repl:
-   - Go to [Repl.it](https://repl.it)
-   - Click "Create Repl"
-   - Select "Python" as language
-   - Name your repl
+## Development
 
-2. Set up the project:
-   - Upload project files or connect with GitHub
-   - Ensure you have the following files in your repl:
-     - All Python files (app.py, google_auth.py, etc.)
-     - Templates and static files
-     - requirements.txt
-     - .replit configuration file
+Start development server with hot-reload:
 
-3. Configure Google Cloud Project:
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project
-   - Enable APIs:
-     - Google Drive API
-     - Google OAuth2 API
-   - Configure OAuth consent screen:
-     - Add required scopes
-     - Add your Repl.it domain as an authorized domain
-   - Create OAuth 2.0 Client ID:
-     - Add authorized redirect URI: `https://your-repl-name.your-username.repl.co/oauth2callback`
-     - Add authorized JavaScript origin: `https://your-repl-name.your-username.repl.co`
+```bash
+npm run watch  # CSS hot-reload
+python app.py  # Flask development server
+```
 
-4. Set up environment secrets:
-   - In your repl, go to "Tools" -> "Secrets"
-   - Add a new secret:
-     - Key: `CLIENT_SECRET`
-     - Value: Paste the entire content of your client_secret.json file
+## Deployment
 
-5. Run the application:
-   - Click the "Run" button
-   - Your app will be available at your Repl.it URL
+1. Set production environment variables:
 
-## Development Notes
+```bash
+FLASK_ENV=production
+DEBUG=False
+```
 
-- Keep `CLIENT_SECRET` secure in Repl.it Secrets
-- Update Google OAuth redirect URIs with your Repl.it domain
-- Monitor Google Cloud Console quotas
-- Enable "Always On" in Repl.it if needed for continuous availability
+2. Build production assets:
 
-## Security Notes
+```bash
+npm run build
+```
 
-- Never commit sensitive credentials
-- Use Repl.it Secrets for sensitive data
-- Keep dependencies updated
-- Monitor application logs
+3. Use a production WSGI server:
+
+```bash
+gunicorn app:app
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+MIT License - feel free to use this project for learning and development!

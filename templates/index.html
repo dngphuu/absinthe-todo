@@ -39,7 +39,9 @@
 
       <!-- Updated User Info section -->
       <div id="user-info">
-        <button class="mr-2 flex items-center transition-all duration-300 focus:outline-none active:scale-110 active:opacity-80">
+        <button
+          class="mr-2 flex items-center transition-all duration-300 focus:outline-none active:scale-110 active:opacity-80"
+        >
           <span class="mr-3 font-roboto text-sm text-white">
             {{ user.name if user and user.name else 'User' }}
           </span>
@@ -60,7 +62,25 @@
     >
       <ul>
         <li class="text-md p-2 text-sm font-medium text-black">
-          <a href="{{ url_for('logout') }}">LOG OUT</a>
+          <a href="{{ url_for('logout') }}" class="flex items-center gap-2">
+            <svg
+              class="h-[16px] w-[16px] text-black"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="26"
+              height="26"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M14 19V5h4a1 1 0 0 1 1 1v11h1a1 1 0 0 1 0 2h-6Z" />
+              <path
+                fill-rule="evenodd"
+                d="M12 4.571a1 1 0 0 0-1.275-.961l-5 1.428A1 1 0 0 0 5 6v11H4a1 1 0 0 0 0 2h1.86l4.865 1.39A1 1 0 0 0 12 19.43V4.57ZM10 11a1 1 0 0 1 1 1v.5a1 1 0 0 1-2 0V12a1 1 0 0 1 1-1Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            LOG OUT
+          </a>
         </li>
       </ul>
     </div>
@@ -158,6 +178,33 @@
         </ul>
       </div>
     </main>
+
+    <!-- Sync button -->
+    <a
+      title="Sync tasks"
+      href="#"
+      id="sync-button"
+      class="fixed bottom-6 right-6 flex items-center justify-center space-x-2 rounded-md bg-[#3d72fe] px-6 py-3 text-white transition-all duration-300 hover:bg-blue-600 active:scale-95"
+    >
+      <svg
+        class="h-6 w-6 text-white"
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"
+        />
+      </svg>
+      <span class="font-rubik text-sm text-white">Sync tasks</span>
+    </a>
   </body>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </html>
