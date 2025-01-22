@@ -23,7 +23,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # Only for development
 
 # Initialize services with config
 task_manager = TaskManager()
-google_auth = GoogleAuth(Config.GOOGLE_AUTH_CONFIG)
+google_auth = GoogleAuth(Config.GOOGLE_CLIENT_ID, Config.GOOGLE_CLIENT_SECRET)
 
 #=============================================================================
 # AUTHENTICATION & SECURITY

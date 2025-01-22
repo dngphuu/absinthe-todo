@@ -10,19 +10,31 @@ import os
 import json
 
 class GoogleAuth:
-    def __init__(self, client_secrets_file):
-        self.client_secrets_file = client_secrets_file
+    def __init__(self, client_id, client_secret):
+        self.client_id = client_id
+        self.client_secret = client_secret
         self.SCOPES = [
             'openid',
             'https://www.googleapis.com/auth/drive.file',
             'https://www.googleapis.com/auth/userinfo.profile',
             'https://www.googleapis.com/auth/userinfo.email'
         ]
+        self.auth_config = {
+            "web": {
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "redirect_uris": ["http://localhost:8080/oauth2callback"],
+                "javascript_origins": ["http://localhost:8080"]
+            }
+        }
 
     def create_auth_flow(self, redirect_uri):
         try:
-            flow = Flow.from_client_secrets_file(
-                self.client_secrets_file,
+            flow = Flow.from_client_config(
+                self.auth_config,
                 scopes=self.SCOPES,
                 redirect_uri=redirect_uri
             )
@@ -37,8 +49,8 @@ class GoogleAuth:
 
     def get_credentials(self, authorization_response, state, redirect_uri):
         try:
-            flow = Flow.from_client_secrets_file(
-                self.client_secrets_file,
+            flow = Flow.from_client_config(
+                self.auth_config,
                 scopes=self.SCOPES,
                 state=state,
                 redirect_uri=redirect_uri
