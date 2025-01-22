@@ -12,31 +12,18 @@ from typing import Callable
 import json
 
 #=============================================================================
-# REPLIT SPECIFIC CONFIGURATION
-#=============================================================================
-def get_client_secrets():
-    """Get client secrets from Repl.it environment or file"""
-    if 'CLIENT_SECRET' in os.environ:
-        # For Repl.it deployment
-        client_secrets_content = json.loads(os.environ['CLIENT_SECRET'])
-        # Create temporary file for Google OAuth library
-        temp_file = os.path.join(pathlib.Path(__file__).parent, "temp_client_secrets.json")
-        with open(temp_file, 'w') as f:
-            json.dump(client_secrets_content, f)
-        return temp_file
-    return os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
-
-#=============================================================================
 # APPLICATION INITIALIZATION
 #=============================================================================
-app = Flask(__name__, template_folder=Config.TEMPLATE_FOLDER)
-app.secret_key = os.environ.get('SECRET_KEY', Config.SECRET_KEY)
+app = Flask(__name__,
+            template_folder=Config.TEMPLATE_FOLDER,
+            static_folder=Config.STATIC_FOLDER
+            )
+app.secret_key = Config.SECRET_KEY
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # Only for development
-client_secrets = get_client_secrets()
 
-# Service instances
+# Initialize services with config
 task_manager = TaskManager()
-google_auth = GoogleAuth(client_secrets)
+google_auth = GoogleAuth(Config.GOOGLE_AUTH_CONFIG)
 
 #=============================================================================
 # AUTHENTICATION & SECURITY
@@ -217,7 +204,7 @@ def sync_tasks():
 
 if __name__ == "__main__":
     app.run(
-        host='0.0.0.0',
-        port=8080,
-        debug=os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+        host=Config.HOST,
+        port=Config.PORT,
+        debug=Config.DEBUG
     )
