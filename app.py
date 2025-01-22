@@ -30,7 +30,7 @@ def get_client_secrets():
 # APPLICATION INITIALIZATION
 #=============================================================================
 app = Flask(__name__, template_folder=Config.TEMPLATE_FOLDER)
-app.secret_key = os.environ.get('SECRET_KEY', Config.SECRET_KEY)  # Add this line
+app.secret_key = os.environ.get('SECRET_KEY', Config.SECRET_KEY)
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # Only for development
 client_secrets = get_client_secrets()
 
@@ -87,19 +87,25 @@ def google_login():
 def oauth2callback():
     """Handle Google OAuth callback"""
     try:
+        if 'state' not in session:
+            return redirect(url_for('login'))
+
         # Get credentials
         credentials = google_auth.get_credentials(
             request.url,
             session['state'],
             url_for('oauth2callback', _external=True)
         )
-        session['credentials'] = credentials
 
-        # Get user info
+        # Store credentials and user info in session
+        session['credentials'] = credentials
         user_info = google_auth.get_user_info(credentials)
         session['user'] = user_info
         session['isAuth'] = True
-
+        
+        # Debug logging
+        app.logger.info(f"Successfully authenticated user: {user_info.get('email')}")
+        
         return redirect(url_for('index'))
     except Exception as e:
         app.logger.error(f"OAuth callback failed: {str(e)}")
@@ -117,19 +123,9 @@ def logout():
 @app.route("/")
 @login_required
 def index():
-    """Main application page displaying task list
-    
-    Returns:
-        Response: Rendered index page with tasks and user info
-    Raises:
-        Exception: Handles any errors during task loading
-    """
+    """Main application page displaying task list"""
     try:
-        if 'credentials' in session:
-            tasks = google_auth.sync_drive_data(session['credentials'], task_manager.tasks)
-            task_manager.tasks = tasks
-        else:
-            tasks = task_manager.load_tasks()
+        tasks = task_manager.load_tasks()
         return render_template("index.html", tasks=tasks, user=session.get('user'))
     except Exception as e:
         app.logger.error(f"Error loading tasks: {str(e)}")
@@ -154,8 +150,6 @@ def add_task():
     
     try:
         new_task = task_manager.add_task(task_content)
-        if 'credentials' in session:
-            google_auth.sync_drive_data(session['credentials'], task_manager.tasks)
         return jsonify({"status": "success", "task": new_task})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
@@ -171,8 +165,6 @@ def update_task():
 
         task = task_manager.update_task(task_id, task_content, completed)
         if task:
-            if 'credentials' in session:
-                google_auth.sync_drive_data(session['credentials'], task_manager.tasks)
             return jsonify({"status": "success", "task": task})
         return jsonify({"status": "error", "message": "Task not found"})
     except Exception as e:
@@ -187,11 +179,40 @@ def delete_task():
             return jsonify({"status": "error", "message": "Task ID is missing"})
         
         if task_manager.delete_task(task_id):
-            if 'credentials' in session:
-                google_auth.sync_drive_data(session['credentials'], task_manager.tasks)
             return jsonify({"status": "success"})
         return jsonify({"status": "error", "message": "Task not found"})
     except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+#=============================================================================
+# TASK SYNC ROUTES
+#=============================================================================
+@app.route("/sync-tasks", methods=["POST"])
+@login_required
+def sync_tasks():
+    """Sync tasks to Google Drive and return current task list"""
+    try:
+        credentials = session.get('credentials')
+        if not credentials:
+            return jsonify({"status": "error", "message": "Not authenticated with Google"})
+        
+        # Upload tasks file to Google Drive
+        file_id = google_auth.upload_to_drive(
+            credentials,
+            task_manager.tasks_file
+        )
+        
+        # Get current tasks to return to client
+        current_tasks = task_manager.load_tasks()
+        
+        return jsonify({
+            "status": "success",
+            "message": "Tasks synced successfully",
+            "fileId": file_id,
+            "tasks": current_tasks
+        })
+    except Exception as e:
+        app.logger.error(f"Task sync failed: {str(e)}")
         return jsonify({"status": "error", "message": str(e)})
 
 if __name__ == "__main__":
