@@ -5,7 +5,7 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'YOUR APP SECRET KEY HERE')
-    DATA_FILE = os.getenv('DATA_FILE', 'tasks.json')
+    DATA_FILE = os.getenv('DATA_FILE', 'YOUR DATA FILE HERE')
     
     # Hardcoded paths
     TEMPLATE_FOLDER = 'templates'
@@ -17,8 +17,8 @@ class Config:
     PORT = int(os.getenv('PORT', 8080))
     
     # Google OAuth Configuration
-    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '927543780747-tb56fsobin3o8k3f8hnral61866ded23.apps.googleusercontent.com')
-    GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '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')
+    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', 'DEFAULT_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', 'DEFAULT_CLIENT_SECRET')
     GOOGLE_AUTH_CONFIG = {
         "web": {
             "client_id": GOOGLE_CLIENT_ID,

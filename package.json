@@ -1,4 +1,14 @@
 {
+  "name": "Absinthe Todo",
+  "version": "1.0.0",
+  "description": "A modern todo application with Google Drive sync",
+  "scripts": {
+    "dev": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css",
+    "build": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify",
+    "watch": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch"
+  },
+  "author": "dngphuu",
+  "license": "MIT",
   "devDependencies": {
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
