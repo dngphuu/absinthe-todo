@@ -7,19 +7,19 @@ from config import Config
 from task_manager import TaskManager
 from google_auth import GoogleAuth
 import os
-import pathlib
 from typing import Callable
-import json
 
 #=============================================================================
 # APPLICATION INITIALIZATION
 #=============================================================================
+# Set OAuth transport security based on configuration
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = Config.OAUTHLIB_INSECURE_TRANSPORT
+
 app = Flask(__name__,
             template_folder=Config.TEMPLATE_FOLDER,
             static_folder=Config.STATIC_FOLDER
             )
 app.secret_key = Config.SECRET_KEY
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # Only for development
 
 # Initialize services with config
 task_manager = TaskManager()

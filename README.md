@@ -73,6 +73,8 @@ python app.py  # Flask development server
 
 1. Set production environment variables:
 
+Edit .env file:
+
 ```bash
 FLASK_ENV=production
 DEBUG=False
