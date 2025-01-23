@@ -1,24 +1,38 @@
 import os
+import tempfile
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.getenv('SECRET_KEY', 'SUPER_SECRET_KEY')
-    DATA_FILE = os.getenv('DATA_FILE', 'tasks.json')
+    # Base paths
+    BASE_DIR = Path(__file__).parent
+    TEMPLATE_FOLDER = os.path.join(BASE_DIR, 'templates')
+    STATIC_FOLDER = os.path.join(BASE_DIR, 'static')
     
-    # Hardcoded paths
-    TEMPLATE_FOLDER = 'templates'
-    STATIC_FOLDER = 'static'
+    # Cache settings
+    CACHE_DIR = os.path.join(tempfile.gettempdir(), 'google_api_cache')
+    ENABLE_CACHE = True
+    CACHE_DISCOVERY = False
+    
+    # File settings
+    BACKUP_FILENAME = 'tasks_backup.json'
+    DATA_FILE = os.getenv('DATA_FILE', 'tasks.json')
+    MIME_TYPE = 'application/json'
     
     # Application settings
+    SECRET_KEY = os.getenv('SECRET_KEY', 'SUPER_SECRET_KEY')
     DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
     HOST = os.getenv('HOST', '0.0.0.0')
     PORT = int(os.getenv('PORT', 8080))
     
     # Google OAuth Configuration
-    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '927543780747-tb56fsobin3o8k3f8hnral61866ded23.apps.googleusercontent.com')
-    GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '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')
+    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
     
-    # OAuth settings
-    OAUTHLIB_INSECURE_TRANSPORT = os.getenv('OAUTHLIB_INSECURE_TRANSPORT', '1')  # Set to '0' in production
+    # Development settings
+    OAUTHLIB_INSECURE_TRANSPORT = '1' if os.getenv('FLASK_ENV') != 'production' else '0'
+    
+    # Logging
+    LOG_LEVEL = 'INFO'

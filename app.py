@@ -177,19 +177,24 @@ def delete_task():
 @app.route("/sync-tasks", methods=["POST"])
 @login_required
 def sync_tasks():
-    """Sync tasks to Google Drive and return current task list"""
+    """Sync tasks with Google Drive"""
     try:
         credentials = session.get('credentials')
         if not credentials:
             return jsonify({"status": "error", "message": "Not authenticated with Google"})
         
-        # Upload tasks file to Google Drive
-        file_id = google_auth.upload_to_drive(
-            credentials,
-            task_manager.tasks_file
-        )
+        # First check if there's a cloud version
+        file_metadata = google_auth.get_drive_file_metadata(credentials)
         
-        # Get current tasks to return to client
+        if file_metadata:
+            # Download and merge cloud data
+            cloud_data = google_auth.download_from_drive(credentials, file_metadata['id'])
+            task_manager.merge_tasks(cloud_data)
+        
+        # Upload current state to cloud
+        file_id = google_auth.upload_to_drive(credentials, task_manager.tasks_file)
+        
+        # Get final task list
         current_tasks = task_manager.load_tasks()
         
         return jsonify({
