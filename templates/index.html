@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+  <!-- Head section with meta tags, CSS and font imports -->
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -20,9 +21,13 @@
       rel="stylesheet"
     />
   </head>
+
   <body class="bg-[#fafafa] antialiased">
-    <!-- Header Bar -->
-    <header class="flex items-center justify-between bg-[#3d72fe] shadow-xl">
+    <!-- Header Section: Contains app logo, title and user info -->
+    <header
+      role="banner"
+      class="flex items-center justify-between bg-[#3d72fe] shadow-xl"
+    >
       <div>
         <!-- Logo and App name -->
         <h1
@@ -55,7 +60,16 @@
       </div>
     </header>
 
-    <!-- Logout menu -->
+    <!-- Add error message container -->
+    <div
+      id="error-message"
+      class="fixed right-4 top-4 hidden rounded-md bg-red-100 p-4 text-red-900"
+      role="alert"
+    >
+      <!-- Error message content will be dynamically inserted -->
+    </div>
+
+    <!-- User Menu: Logout option -->
     <div
       id="logout-menu"
       class="absolute right-3 mt-2 hidden -translate-y-4 transform cursor-pointer rounded-md border-2 bg-white font-rubik opacity-0 shadow-sm transition-all duration-150"
@@ -85,12 +99,20 @@
       </ul>
     </div>
 
-    <!-- Task management -->
+    <!-- Main Content: Task Management Interface -->
     <main
+      role="main"
       class="mx-auto mt-24 max-w-3xl rounded-md border bg-white font-rubik shadow-xl"
     >
-      <!-- Add task -->
-      <form id="add-task-form">
+      <!-- Task Input Form -->
+      <form id="add-task-form" class="relative">
+        <!-- Add loading overlay -->
+        <div
+          id="form-loading"
+          class="absolute inset-0 hidden bg-white/50 backdrop-blur-sm"
+        >
+          <!-- Loading spinner -->
+        </div>
         <div
           class="relative mx-4 my-1 flex justify-around after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:bg-gray-300 after:transition-all after:duration-300 after:ease-in-out focus-within:after:bg-black"
           id="add-task-container"
@@ -127,9 +149,9 @@
         </div>
       </form>
 
-      <!-- Display tasks -->
+      <!-- Task List Container -->
       <div class="mx-6 mb-3 mt-1">
-        <ul id="task-list">
+        <ul id="task-list" role="list" aria-label="Task list">
           {% for task in tasks %}
           <li
             data-id="{{ task.id }}"
@@ -179,12 +201,12 @@
       </div>
     </main>
 
-    <!-- Sync button -->
+    <!-- Floating Sync Button -->
     <a
-      title="Sync tasks"
-      href="#"
       id="sync-button"
-      class="fixed bottom-6 right-6 flex items-center justify-center space-x-2 rounded-md bg-[#3d72fe] px-6 py-3 text-white transition-all duration-300 hover:bg-blue-600 active:scale-95"
+      role="button"
+      aria-label="Synchronize tasks"
+      class="fixed bottom-6 right-6 flex items-center justify-center space-x-2 rounded-md bg-[#3d72fe] px-6 py-3 text-white transition-all duration-300 hover:bg-blue-600 active:scale-95 disabled:opacity-50"
     >
       <svg
         class="h-6 w-6 text-white"
@@ -206,5 +228,7 @@
       <span class="font-rubik text-sm text-white">Sync tasks</span>
     </a>
   </body>
+
+  <!-- JavaScript -->
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </html>

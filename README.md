@@ -8,7 +8,7 @@ A modern todo application built with Flask and JavaScript that helps you manage 
 - ✨ Clean and modern interface
 - 📱 Fully responsive design
 - ⌨️ Keyboard accessibility
-- 🔄 Google Drive sync
+- 🔄 Real-time Google Drive sync
 - 🎯 Instant task updates
 
 ## Tech Stack
@@ -16,90 +16,198 @@ A modern todo application built with Flask and JavaScript that helps you manage 
 - Backend: Python/Flask
 - Frontend: JavaScript, Tailwind CSS
 - Authentication: Google OAuth2
-- Storage: Google Drive, local
+- Storage: Google Drive API, local JSON
+- Cache: File-based caching
+- Logging: Python logging module
 
 ## Prerequisites
 
-- Python 3.8+
-- Node.js 16+
-- Google account
-- Google Cloud Platform project (for API access) (development)
+Before starting, ensure you have:
 
-## Quick Start
+- [Python 3.8+](https://www.python.org/downloads/) installed
+  - [Windows installation guide](https://docs.python.org/3/using/windows.html)
+  - [Linux/MacOS installation guide](https://docs.python.org/3/using/unix.html)
+- [Git](https://git-scm.com/downloads) installed
+  - [Git setup guide](https://github.com/git-guides/install-git)
+- [Google account](https://accounts.google.com/signup)
+- [Google Cloud Platform](https://console.cloud.google.com/) project
+  - [Getting started with GCP](https://cloud.google.com/gcp/getting-started)
 
-1. Clone and setup:
+### Development Prerequisites
 
-Run install script:
+If you plan to modify the frontend styles (TailwindCSS):
 
-- INSTALL.ps1 (Windows)
-- INSTALL.sh (Linux/MacOS)
+- [Node.js 16+](https://nodejs.org/en/download/)
+  - Used only for TailwindCSS compilation
+  - Not required for running the application
 
-2. Configure Google OAuth (Optional):
+## Installation Guide
 
-- Create a project in [Google Cloud Console](https://console.cloud.google.com)
-- Enable Google Drive API
-- Create OAuth 2.0 credentials
-- Edit GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in config.py
-
-3. Environment setup (Optional):
+### 1. Project Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/dngphuu/absinthe-todo.git
+
+# Navigate to project directory
+cd todo-app
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# For Windows (use one of these commands):
+venv\Scripts\activate     # Using Command Prompt
+.\venv\Scripts\activate  # Using PowerShell
+
+# For Linux/MacOS:
+source venv/bin/activate
+
+# Install required packages
+pip install -r requirements.txt
+```
+
+💡 **Windows Command Tips:**
+
+- If you get "execution policy" errors in PowerShell, run:
+  ```powershell
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+  ```
+- Use backslashes (`\`) for file paths in Windows
+- Use `cd` to change directories, for example: `cd C:\Users\YourName\Desktop\todo-app`
+
+### 2. Google OAuth Configuration
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select existing one
+3. Enable the Google Drive API:
+   - Navigate to "APIs & Services" > "Library"
+   - Search for "Google Drive API"
+   - Click "Enable"
+4. Configure OAuth consent screen:
+   - Go to "APIs & Services" > "OAuth consent screen"
+   - Choose "External" user type
+   - Fill in required information (app name, user support email, developer contact)
+5. Create OAuth credentials:
+   - Go to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "OAuth client ID"
+   - Select "Web application"
+   - Add authorized redirect URIs:
+     - http://localhost:8080/oauth2callback (for local use/development)
+   - Save and note down your Client ID and Client Secret
+
+### 3. Environment Configuration
+
+1. Create your environment file by copying the example file:
+
+```bash
+# For Windows Command Prompt:
+copy .env.example .env
+
+# For Windows PowerShell:
+Copy-Item .env.example .env
+
+# For Linux/MacOS:
 cp .env.example .env
-# Edit .env with your settings
 ```
 
-4. Build and run:
+💡 **File Copying Tips:**
+
+- Make sure you're in the project directory
+- In Windows Explorer, you can also manually copy and rename the file:
+  1. Right-click on `.env.example`
+  2. Select "Copy"
+  3. Right-click in the same folder
+  4. Select "Paste"
+  5. Rename the new file to `.env`
+
+2. Edit the .env file:
+
+- Open `.env` with any text editor (Notepad, VS Code, etc.)
+- If you can't see the file in Windows Explorer, enable "Show hidden files":
+  1. Open File Explorer
+  2. Click "View" at the top
+  3. Check "Hidden items" in the "Show/hide" section
 
 ```bash
-# Build CSS
-npm run build
+# Required changes in .env:
+GOOGLE_CLIENT_ID=your-client-id-here
+GOOGLE_CLIENT_SECRET=your-client-secret-here
+SECRET_KEY=your-random-secret-key
 
-# Start server
+# Optional changes (defaults are usually fine):
+DEBUG=True
+PORT=8080
+```
+
+⚠️ IMPORTANT:
+
+- Never commit your .env file to version control
+- Make sure the file is named exactly `.env` (not `.env.txt`)
+- In Windows, if using Notepad, save with "All Files (_._)" and not as "Text Document"
+
+### 4. Running the Application
+
+```bash
+# Make sure your virtual environment is activated
+# Then start the application:
 python app.py
+
+# The app will be available at:
+# http://localhost:8080
 ```
 
-Visit `http://localhost:8080` to use the app!
+💡 **Running Tips:**
 
-## Development
+- If you close your terminal, you'll need to activate the virtual environment again
+- To stop the application, press Ctrl+C in the terminal
+- If port 8080 is in use, change the PORT in your .env file
 
-Start development server with hot-reload:
+### 5. Verify Installation
+
+1. Visit http://localhost:8080
+2. You should see the login page
+3. Try logging in with your Google account
+4. Create a test task to verify everything works
+
+### Troubleshooting
+
+If you encounter issues:
+
+1. Ensure all environment variables are set correctly
+2. Check if Google OAuth credentials are properly configured
+3. Verify that the virtual environment is activated
+4. Check the console for error messages
+
+## Development Guide
+
+### Local Development
 
 ```bash
-npm run watch  # CSS hot-reload
-python app.py  # Flask development server
+# Install dependencies
+pip install -r requirements.txt
+
+# Run with debug mode
+FLASK_ENV=development python app.py
 ```
 
-## Deployment
+### API Documentation
 
-1. Set production environment variables:
+#### Task Endpoints
 
-Edit .env file:
+- GET `/` - Main task view
+- POST `/add-task` - Create task
+- POST `/update-task` - Update task
+- POST `/delete-task` - Delete task
+- POST `/sync-tasks` - Sync with Google Drive
 
-```bash
-FLASK_ENV=production
-DEBUG=False
-```
+#### Authentication Endpoints
 
-2. Build production assets:
-
-```bash
-npm run build
-```
-
-3. Use a production WSGI server:
-
-```bash
-gunicorn app:app
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+- GET `/login` - Login page
+- GET `/google-login` - Start OAuth flow
+- GET `/oauth2callback` - OAuth callback
+- GET `/logout` - Logout user
 
 ## License
 
-MIT License - feel free to use this project for learning and development!
+MIT License

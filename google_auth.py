@@ -209,16 +209,17 @@ class GoogleAuth:
                 return True
             
             cloud_data = self.download_from_drive(credentials_json, file_metadata['id'])
+            cloud_sync_time = cloud_data.get('last_sync')
             
-            if cloud_data.get('version', 0) > task_manager.version:
-                self.logger.info("Cloud version is newer, merging changes")
+            if not task_manager.last_sync or (cloud_sync_time and cloud_sync_time > task_manager.last_sync):
+                self.logger.info("Cloud data is newer, merging changes")
                 return task_manager.merge_tasks(cloud_data)
-            elif cloud_data.get('version', 0) < task_manager.version:
-                self.logger.info("Local version is newer, uploading changes")
+            elif not cloud_sync_time or task_manager.last_sync > cloud_sync_time:
+                self.logger.info("Local data is newer, uploading changes")
                 self.upload_to_drive(credentials_json, task_manager.tasks_file)
                 return True
             
-            self.logger.info("No sync needed - versions match")
+            self.logger.info("No sync needed - data is up to date")
             return False
         except Exception as e:
             self.logger.error(f"Sync failed: {str(e)}")

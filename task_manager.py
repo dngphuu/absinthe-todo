@@ -11,7 +11,6 @@ class TaskManager:
     
     def __init__(self):
         self.tasks: List[Dict] = []
-        self.version: int = 0
         self.last_sync: Optional[str] = None
         self.tasks_file = os.path.join(Path(__file__).parent, 'tasks.json')
         self._setup_logging()
@@ -40,12 +39,10 @@ class TaskManager:
                     # Check if data is in the new format (dict with metadata)
                     if isinstance(data, dict):
                         self.tasks = data.get('tasks', [])
-                        self.version = data.get('version', 0)
                         self.last_sync = data.get('last_sync')
                     else:
                         # Handle legacy format (list of tasks)
                         self.tasks = data if isinstance(data, list) else []
-                        self.version = 0
                         self.last_sync = None
                         # Migrate to new format
                         self.save_tasks()
@@ -59,15 +56,15 @@ class TaskManager:
     def save_tasks(self) -> bool:
         """Save tasks to local storage"""
         try:
-            self.version += 1
+            current_time = datetime.now().isoformat()
             data = {
                 'tasks': self.tasks,
-                'version': self.version,
-                'last_sync': datetime.now().isoformat()
+                'last_sync': current_time
             }
             with open(self.tasks_file, 'w') as f:
                 json.dump(data, f, indent=2)
-            self.logger.info(f"Saved {len(self.tasks)} tasks (version {self.version})")
+            self.last_sync = current_time
+            self.logger.info(f"Saved {len(self.tasks)} tasks at {current_time}")
             return True
         except Exception as e:
             self.logger.error(f"Error saving tasks: {str(e)}")
@@ -127,7 +124,10 @@ class TaskManager:
         """Merge cloud data with local data based on timestamps"""
         try:
             cloud_tasks = cloud_data.get('tasks', [])
-            cloud_version = cloud_data.get('version', 0)
+            cloud_sync_time = cloud_data.get('last_sync')
+            
+            if not cloud_sync_time or (self.last_sync and self.last_sync >= cloud_sync_time):
+                return False
             
             # Create maps for both local and cloud tasks
             local_tasks_map = {task['id']: task for task in self.tasks}
@@ -142,22 +142,18 @@ class TaskManager:
                 cloud_task = cloud_tasks_map.get(task_id)
                 
                 if not local_task:
-                    # Task exists only in cloud
                     merged_tasks.append(cloud_task)
                 elif not cloud_task:
-                    # Task exists only locally
                     merged_tasks.append(local_task)
                 else:
-                    # Task exists in both - use the most recently updated version
                     local_updated = datetime.fromisoformat(local_task['updated_at'])
                     cloud_updated = datetime.fromisoformat(cloud_task['updated_at'])
                     merged_tasks.append(cloud_task if cloud_updated > local_updated else local_task)
             
             if merged_tasks != self.tasks:
                 self.tasks = merged_tasks
-                self.version = max(self.version, cloud_version) + 1
                 self.save_tasks()
-                self.logger.info(f"Merged tasks with cloud version {cloud_version}")
+                self.logger.info("Merged tasks with cloud version")
                 return True
                 
             return False
