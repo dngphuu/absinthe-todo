@@ -38,8 +38,9 @@ Before starting, ensure you have:
 If you plan to modify the frontend styles (TailwindCSS):
 
 - [Node.js 16+](https://nodejs.org/en/download/)
-  - Used only for TailwindCSS compilation
-  - Not required for running the application
+  - Used for TailwindCSS compilation and frontend development
+  - Required if you plan to modify frontend assets
+  - Download and install from the official website or use a version manager like nvm
 
 ## Installation Guide
 
@@ -65,6 +66,12 @@ source venv/bin/activate
 
 # Install required packages
 pip install -r requirements.txt
+
+# Install Node.js dependencies (for frontend development)
+npm install
+
+# Build frontend assets
+npm run build
 ```
 
 💡 **Windows Command Tips:**
@@ -184,10 +191,16 @@ If you encounter issues:
 ### Local Development
 
 ```bash
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
 
-# Run with debug mode
+# Install Node.js dependencies
+npm install
+
+# Watch for frontend changes
+npm run watch
+
+# In a separate terminal, run the Flask app
 FLASK_ENV=development python app.py
 ```
 
