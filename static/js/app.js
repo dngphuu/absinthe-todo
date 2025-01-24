@@ -19,9 +19,17 @@ const Utils = {
     alert(`${customMessage}: ${error.message}`);
   },
 
+  handleSuccess(message) {
+    alert(message);
+  },
+
   isValidContent(content) {
     return typeof content === "string" && content.trim().length > 0;
   },
+
+  wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 };
 
 //=============================================================================
@@ -246,7 +254,8 @@ const TaskManager = {
       "li",
       {
         "data-id": task.id,
-        class: "task-item group relative flex w-full items-center justify-between rounded-lg border border-gray-100 bg-white p-2 transition-all duration-200 hover:border-gray-200 hover:shadow-sm"
+        class:
+          "task-item group relative flex w-full items-center justify-between rounded-lg border border-gray-100 bg-white p-2 transition-all duration-200 hover:border-gray-200 hover:shadow-sm",
       },
       `
         <div class="flex items-center flex-1">
@@ -273,7 +282,7 @@ const TaskManager = {
             </svg>
           </button>
         </div>
-      `
+      `,
     );
   },
 
@@ -285,17 +294,34 @@ const TaskManager = {
    * - Resets underline style
    */
   resetStyles() {
-    DOM.get("taskInput").value = ""; // Clear input
-    DOM.get("taskInput").blur(); // Remove focus
-    DOM.get("addTaskIcon").style.fill = "#bdbdbd"; // Reset button color
-    const addTaskContainer = document.getElementById("add-task-container");
-    addTaskContainer.classList.remove("after:bg-black"); // Reset line color
+    const input = document.querySelector(".task-input");
+    const submitBtn = document.querySelector(".task-submit-btn");
+
+    if (input) {
+      input.value = "";
+      input.blur();
+    }
+    if (submitBtn) {
+      submitBtn.classList.remove("has-content");
+    }
   },
 
   handleTaskInputFocus() {
     const inputContainer = document.querySelector('.task-input-container');
     const input = document.querySelector('.task-input');
-    
+    const submitBtn = document.querySelector('.task-submit-btn');
+
+    // Add content state handler
+    input.addEventListener('input', (e) => {
+      const hasContent = e.target.value.trim().length > 0;
+      submitBtn.classList.toggle('has-content', hasContent);
+
+      if (hasContent) {
+        submitBtn.classList.add('transform', 'scale-110');
+        setTimeout(() => submitBtn.classList.remove('transform', 'scale-110'), 200);
+      }
+    });
+
     // Add floating animation
     input.addEventListener('focus', () => {
       inputContainer.style.transform = 'translateY(-4px)';
@@ -307,71 +333,112 @@ const TaskManager = {
       inputContainer.style.boxShadow = '';
     });
 
-    // Add ripple effect on button click
-    const submitBtn = document.querySelector('.task-submit-btn');
+    // Add ripple effect with better positioning
     submitBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      // Create ripple element regardless of input content
       const ripple = document.createElement('div');
-      ripple.classList.add('ripple');
+      ripple.className = 'ripple';
       submitBtn.appendChild(ripple);
-      
+
+      // Get click coordinates relative to button
       const rect = submitBtn.getBoundingClientRect();
-      ripple.style.left = `${e.clientX - rect.left}px`;
-      ripple.style.top = `${e.clientY - rect.top}px`;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
       
+      // Position ripple at click location
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+
+      if (input.value.trim().length > 0) {
+        // Add click feedback
+        submitBtn.classList.add('scale-95');
+        setTimeout(() => submitBtn.classList.remove('scale-95'), 200);
+      } else {
+        // Shake animation for empty input
+        submitBtn.classList.add('animate-[wiggle_0.5s_ease-in-out]');
+        setTimeout(() => submitBtn.classList.remove('animate-[wiggle_0.5s_ease-in-out]'), 500);
+      }
+      
+      // Remove ripple after animation
       setTimeout(() => ripple.remove(), 600);
+    });
+
+    // Add hover effect when input has content
+    input.addEventListener('input', () => {
+      const hasContent = input.value.trim().length > 0;
+      if (hasContent && !submitBtn.classList.contains('has-content')) {
+        submitBtn.classList.add('has-content');
+      } else if (!hasContent && submitBtn.classList.contains('has-content')) {
+        submitBtn.classList.remove('has-content');
+      }
     });
   },
 
   init() {
     this.handleTaskInputFocus();
     // ...existing init code...
-  }
+  },
 };
 
 //=============================================================================
 // MODULE: Sync Operations
 //=============================================================================
 const SyncManager = {
-  toggleLoading(isLoading) {
-    if (!DOM.get("syncButton")) return;
-
-    const originalContent = DOM.get("syncButton").innerHTML;
+  setLoadingState(element, isLoading, loadingText = "Loading...", isSyncButton = false) {
+    if (!element) return;
+    
     if (isLoading) {
-      DOM.get("syncButton").disabled = true;
-      DOM.get("syncButton").innerHTML = `
-                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span class="ml-2 font-rubik text-sm">Syncing...</span>
-            `;
+      element.disabled = true;
+      if (isSyncButton) {
+        element.classList.add('syncing');
+        element.innerHTML = `
+          <svg class="sync-icon h-6 w-6 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"/>
+          </svg>
+          <span class="font-rubik text-sm text-white">${loadingText}</span>
+        `;
+      } else {
+        element.innerHTML = `
+          <span class="flex items-center space-x-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-xs">${loadingText}</span>
+          </span>
+        `;
+      }
     } else {
-      DOM.get("syncButton").disabled = false;
-      DOM.get("syncButton").innerHTML = originalContent;
+      element.disabled = false;
+      if (isSyncButton) {
+        element.classList.remove('syncing');
+        element.innerHTML = `
+          <svg class="sync-icon h-6 w-6 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"/>
+          </svg>
+          <span class="font-rubik text-sm text-white">Sync tasks</span>
+        `;
+      } else {
+        element.innerHTML = `
+          <span class="flex items-center space-x-2">
+            <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+            </svg>
+            <span class="text-xs">Magic Sort</span>
+          </span>
+        `;
+      }
     }
-    return originalContent;
   },
 
   async syncTasks() {
     if (LoadingState.isLoading) return;
 
-    LoadingState.start(DOM.get("sync-button"));
-    const originalContent = `
-            <svg class="h-6 w-6 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"/>
-            </svg>
-            <span class="font-rubik text-sm text-white">Sync tasks</span>
-        `;
-
-    // Show loading state with consistent sizing
-    DOM.get("syncButton").disabled = true;
-    DOM.get("syncButton").innerHTML = `
-            <svg class="h-6 w-6 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span class="ml-2 font-rubik text-sm text-white">Syncing...</span>
-        `;
+    const syncButton = DOM.get("sync-button");
+    LoadingState.start(syncButton);
+    this.setLoadingState(syncButton, true, "Syncing...", true);
 
     try {
       const response = await fetch("/sync-tasks", {
@@ -381,31 +448,27 @@ const SyncManager = {
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
 
-      if (data.status === "success") {
-        if (Array.isArray(data.tasks)) {
-          DOM.get("taskList").innerHTML = "";
-          data.tasks.forEach((task) => {
-            const taskElement = TaskManager.createTaskElement(task);
-            DOM.get("taskList").appendChild(taskElement);
-          });
-        }
-        alert("Tasks synced successfully!");
+      if (data.status === "success" && Array.isArray(data.tasks)) {
+        const taskList = DOM.get("taskList");
+        taskList.innerHTML = "";
+        data.tasks.forEach(task => {
+          const taskElement = TaskManager.createTaskElement(task);
+          taskList.appendChild(taskElement);
+        });
+        Utils.handleSuccess("Tasks synced successfully!");
       } else {
         throw new Error(data.message || "Sync failed");
       }
     } catch (error) {
-      console.error("Error syncing tasks:", error);
-      alert(`Sync failed: ${error.message}`);
+      Utils.handleError(error, "Sync failed");
     } finally {
-      // Always restore original button state
-      LoadingState.stop(DOM.get("sync-button"));
-      DOM.get("syncButton").innerHTML = originalContent;
+      // Add a small delay to ensure smooth transition
+      await Utils.wait(300);
+      LoadingState.stop(syncButton);
+      this.setLoadingState(syncButton, false, null, true);
     }
   },
 };
@@ -414,76 +477,146 @@ const SyncManager = {
 // MODULE: View Manager
 //=============================================================================
 const ViewManager = {
-  currentView: 'list', // 'list' or 'matrix'
+  currentView: "list", // 'list' or 'matrix'
   isTasksSorted: false,
 
   toggleView() {
     if (!this.isTasksSorted) return;
-    
-    const listView = DOM.get('task-list');
-    const matrixView = DOM.get('matrix-view');
-    const viewButton = DOM.get('view-toggle-button');
-    
+
+    const listView = DOM.get("task-list");
+    const matrixView = DOM.get("matrix-view");
+    const viewButton = DOM.get("view-toggle-button");
+
     // Toggle view type
-    this.currentView = this.currentView === 'list' ? 'matrix' : 'list';
-    
-    // Update button icon
-    viewButton.innerHTML = this.currentView === 'list' 
-      ? `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    this.currentView = this.currentView === "list" ? "matrix" : "list";
+
+    // Update button icon and text
+    viewButton.innerHTML =
+      this.currentView === "list"
+        ? `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
          </svg>
-         <span class="text-xs">View</span>`
-      : `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+         <span class="text-xs">List View</span>`
+        : `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h16v16H4V4z M4 12h16 M12 4v16"/>
          </svg>
-         <span class="text-xs">View</span>`;
+         <span class="text-xs">Matrix View</span>`;
 
-    // Animate transition
-    if (this.currentView === 'matrix') {
-      listView.style.opacity = '0';
+    // Add transition classes
+    listView.classList.add("view-list");
+    matrixView.classList.add("view-matrix");
+
+    // Animate transition with transform and opacity
+    if (this.currentView === "matrix") {
+      listView.style.transform = "translateY(-10px)";
+      listView.style.opacity = "0";
       setTimeout(() => {
-        listView.classList.add('hidden');
-        matrixView.classList.remove('hidden');
-        setTimeout(() => {
-          matrixView.style.opacity = '1';
-          this.updateMatrixView();
-        }, 50);
+        listView.classList.add("hidden");
+        matrixView.classList.remove("hidden");
+        // Reset transform before animating in
+        matrixView.style.transform = "translateY(10px)";
+        matrixView.style.opacity = "0";
+        // Force reflow
+        matrixView.offsetHeight;
+        // Animate in
+        matrixView.style.transform = "translateY(0)";
+        matrixView.style.opacity = "1";
+        this.updateMatrixView();
       }, 300);
     } else {
-      matrixView.style.opacity = '0';
+      matrixView.style.transform = "translateY(-10px)";
+      matrixView.style.opacity = "0";
       setTimeout(() => {
-        matrixView.classList.add('hidden');
-        listView.classList.remove('hidden');
-        setTimeout(() => {
-          listView.style.opacity = '1';
-        }, 50);
+        matrixView.classList.add("hidden");
+        listView.classList.remove("hidden");
+        // Reset transform before animating in
+        listView.style.transform = "translateY(10px)";
+        listView.style.opacity = "0";
+        // Force reflow
+        listView.offsetHeight;
+        // Animate in
+        listView.style.transform = "translateY(0)";
+        listView.style.opacity = "1";
       }, 300);
     }
   },
 
   updateMatrixView() {
-    const tasks = Array.from(DOM.get('task-list').children);
-    
+    const tasks = Array.from(DOM.get("task-list").children);
+
     // Clear existing tasks in matrix
-    document.querySelectorAll('.quadrant ul').forEach(ul => ul.innerHTML = '');
-    
+    document.querySelectorAll(".quadrant ul").forEach((ul) => (ul.innerHTML = ""));
+
     // Distribute tasks to quadrants with animations
     tasks.forEach((task, index) => {
-      const quadrant = task.classList.contains('quadrant-q1') ? 'q1' :
-                      task.classList.contains('quadrant-q2') ? 'q2' :
-                      task.classList.contains('quadrant-q3') ? 'q3' : 'q4';
-      
+      const quadrant = task.classList.contains("quadrant-q1")
+        ? "q1"
+        : task.classList.contains("quadrant-q2")
+          ? "q2"
+          : task.classList.contains("quadrant-q3")
+            ? "q3"
+            : "q4";
+
       const quadrantList = document.querySelector(`.${quadrant}-tasks`);
       if (quadrantList) {
         const clonedTask = task.cloneNode(true);
-        // Add matrix-specific styles
-        clonedTask.classList.add('opacity-0', 'translate-x-2');
-        clonedTask.classList.add('transition-all', 'duration-300', 'ease-in-out');
-        quadrantList.appendChild(clonedTask);
         
-        // Animate task entrance
+        // Add matrix-specific styles
+        clonedTask.classList.add("opacity-0", "translate-x-2", "transition-all", "duration-300", "ease-in-out");
+        
+        // Remove any existing indicators
+        const indicator = clonedTask.querySelector(".quadrant-indicator");
+        if (indicator) {
+          indicator.remove();
+        }
+
+        // Re-attach event listeners to cloned task
+        const checkbox = clonedTask.querySelector(".task-checkbox");
+        const content = clonedTask.querySelector(".task-content");
+        const deleteBtn = clonedTask.querySelector(".task-delete");
+
+        if (checkbox) {
+          checkbox.addEventListener("change", () => {
+            const taskId = clonedTask.getAttribute("data-id");
+            const content = clonedTask.querySelector(".task-content").value;
+            TaskManager.updateTask(taskId, content, checkbox.checked);
+          });
+        }
+
+        if (content) {
+          content.addEventListener("focusout", () => {
+            const taskId = clonedTask.getAttribute("data-id");
+            const newContent = content.value.trim();
+            const completed = clonedTask.querySelector(".task-checkbox").checked;
+
+            if (newContent !== "" && newContent !== content.defaultValue) {
+              TaskManager.updateTask(taskId, newContent, completed);
+              content.defaultValue = newContent;
+            } else if (newContent === "") {
+              content.value = content.defaultValue;
+            }
+          });
+
+          content.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              content.blur();
+            }
+          });
+        }
+
+        if (deleteBtn) {
+          deleteBtn.addEventListener("click", () => {
+            const taskId = clonedTask.getAttribute("data-id");
+            TaskManager.deleteTask(taskId);
+          });
+        }
+
+        quadrantList.appendChild(clonedTask);
+
+        // Animate task entrance with a slight delay based on index
         setTimeout(() => {
-          clonedTask.classList.remove('opacity-0', 'translate-x-2');
+          clonedTask.classList.remove("opacity-0", "translate-x-2");
         }, index * 50);
       }
     });
@@ -491,83 +624,89 @@ const ViewManager = {
 
   enableViewToggle() {
     this.isTasksSorted = true;
-    const viewButton = DOM.get('view-toggle-button');
+    const viewButton = DOM.get("view-toggle-button");
     viewButton.disabled = false;
-    viewButton.classList.remove('text-gray-400', 'bg-gray-100');
-    viewButton.classList.add('text-gray-700', 'bg-white', 'border', 'border-gray-200');
-  }
+    viewButton.classList.remove("text-gray-400", "bg-gray-100");
+    viewButton.classList.add(
+      "text-gray-700",
+      "bg-white",
+      "border",
+      "border-gray-200",
+    );
+  },
 };
 
 //=============================================================================
 // MODULE: Magic Sort Operations
 //=============================================================================
 const MagicSortManager = {
-  updateTaskCount() {
-    const count = document.querySelectorAll('.task-item').length;
-    document.getElementById('task-count').textContent = count;
-  },
-
   async sortTasks() {
     if (LoadingState.isLoading) return;
 
-    const button = DOM.get('magic-sort-button');
+    const button = DOM.get("magic-sort-button");
+    const taskList = DOM.get("taskList");
+    
     try {
       LoadingState.start(button);
-      
-      // Add rotation animation to button
-      button.classList.add('animate-spin');
+      button.classList.add('sorting');
+      SyncManager.setLoadingState(button, true, "Sorting...");
 
       const response = await fetch("/magic-sort", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" }
       });
 
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
 
-      if (data.status === "success") {
-        // Fade out current tasks
-        const taskList = DOM.get("taskList");
-        taskList.style.opacity = '0';
-        await new Promise(r => setTimeout(r, 300)); // Wait for fade
+      if (data.status === "success" && Array.isArray(data.tasks)) {
+        // Fade out and update tasks
+        taskList.style.opacity = "0";
+        await Utils.wait(300);
 
-        // Update task list with sorted tasks
-        DOM.get("taskList").innerHTML = "";
-        data.tasks.forEach((task) => {
+        // Update task list
+        taskList.innerHTML = "";
+        data.tasks.forEach(task => {
           const taskElement = TaskManager.createTaskElement(task);
-          // Add quadrant indicator with animation
           taskElement.classList.add(`quadrant-${task.quadrant.toLowerCase()}`);
-          taskElement.style.opacity = '0';
-          taskElement.style.transform = 'translateX(-10px)';
-          DOM.get("taskList").appendChild(taskElement);
+          taskElement.style.opacity = "0";
+          taskElement.style.transform = "translateX(-10px)";
+          taskList.appendChild(taskElement);
         });
 
-        // Fade in new tasks sequentially
-        const tasks = taskList.children;
-        await new Promise(r => setTimeout(r, 100));
-        taskList.style.opacity = '1';
+        // Fade in tasks sequentially
+        await Utils.wait(100);
+        taskList.style.opacity = "1";
         
-        for (let i = 0; i < tasks.length; i++) {
-          const task = tasks[i];
-          task.style.transition = 'all 300ms ease-in-out';
-          task.style.opacity = '1';
-          task.style.transform = 'translateX(0)';
-          await new Promise(r => setTimeout(r, 50));
-        }
+        const tasks = Array.from(taskList.children);
+        const animationPromises = tasks.map((task, index) => {
+          return new Promise(resolve => {
+            setTimeout(() => {
+              task.style.transition = "all 300ms ease-in-out";
+              task.style.opacity = "1";
+              task.style.transform = "translateX(0)";
+              resolve();
+            }, index * 50);
+          });
+        });
 
-        // Enable view toggle after successful sort
+        // Wait for all animations to complete
+        await Promise.all(animationPromises);
+        await Utils.wait(300); // Additional wait for final animation
+
         ViewManager.enableViewToggle();
+        Utils.handleSuccess("Tasks sorted successfully!");
       } else {
         throw new Error(data.message || "Sort failed");
       }
     } catch (error) {
-      console.error("Error sorting tasks:", error);
-      alert(`Sort failed: ${error.message}`);
+      Utils.handleError(error, "Sort failed");
     } finally {
-      button.classList.remove('animate-spin');
+      // Ensure loading states are cleared after all animations
+      await Utils.wait(300); // Wait for animations to complete
       LoadingState.stop(button);
-      this.updateTaskCount();
+      button.classList.remove('sorting');
+      SyncManager.setLoadingState(button, false);
     }
   },
 };
@@ -577,27 +716,29 @@ const MagicSortManager = {
 //=============================================================================
 const EventHandlers = {
   init() {
-    // Debounce input handler
-    const debouncedInputHandler = Utils.debounce(function (e) {
-      DOM.get("addTaskIcon").style.fill = e.target.value.trim()
-        ? "#3d72fe"
-        : "#bdbdbd";
-    }, 100);
+    const taskInput = document.querySelector(".task-input");
+    const addTaskBtn = document.querySelector(".task-submit-btn");
 
-    DOM.get("taskInput").addEventListener("input", debouncedInputHandler);
-
-    DOM.get("taskInput").addEventListener("keypress", async function (event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        await TaskManager.createTask(DOM.get("taskInput").value.trim());
+    // Task input handlers
+    const handleTaskSubmit = async (e) => {
+      e?.preventDefault();
+      const content = taskInput.value.trim();
+      if (content) {
+        await TaskManager.createTask(content);
       }
-    });
+    };
 
-    DOM.get("addTaskBtn").addEventListener("click", async function () {
-      await TaskManager.createTask(DOM.get("taskInput").value.trim());
-    });
+    if (taskInput) {
+      taskInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleTaskSubmit(e);
+      });
+    }
 
-    // Task operations handlers
+    if (addTaskBtn) {
+      addTaskBtn.addEventListener("click", handleTaskSubmit);
+    }
+
+    // Keep the rest of the event handlers
     document.addEventListener("change", function (e) {
       if (e.target.classList.contains("task-checkbox")) {
         const taskId = e.target.closest("li").getAttribute("data-id");
@@ -643,8 +784,8 @@ const EventHandlers = {
     });
 
     // Sync button handler
-    if (DOM.get("syncButton")) {
-      DOM.get("syncButton").addEventListener("click", async (e) => {
+    if (DOM.get("sync-button")) {
+      DOM.get("sync-button").addEventListener("click", async (e) => {
         e.preventDefault();
         e.stopPropagation();
         await SyncManager.syncTasks();
@@ -660,24 +801,12 @@ const EventHandlers = {
     }
 
     // Add view toggle button handler
-    if (DOM.get('view-toggle-button')) {
-      DOM.get('view-toggle-button').addEventListener('click', () => {
+    if (DOM.get("view-toggle-button")) {
+      DOM.get("view-toggle-button").addEventListener("click", () => {
         ViewManager.toggleView();
       });
     }
 
-    // Update task count on load
-    MagicSortManager.updateTaskCount();
-
-    // Add task count update on task changes
-    const taskObserver = new MutationObserver(() => {
-      MagicSortManager.updateTaskCount();
-    });
-
-    taskObserver.observe(DOM.get('taskList'), {
-      childList: true,
-      subtree: true
-    });
   },
 };
 

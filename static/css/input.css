@@ -5,17 +5,35 @@
 @layer components {
   /* Task Input Form */
   .task-input-container {
-    @apply relative mx-4 my-4 rounded-xl bg-gray-50/30 p-3 shadow-sm transition-all duration-300 focus-within:bg-white focus-within:shadow-md;
+    @apply relative mx-4 my-4 rounded-xl bg-gray-50/30 p-3 transition-all duration-300 ease-in-out focus-within:translate-y-[-2px] focus-within:bg-white focus-within:shadow-lg;
   }
 
   .task-input {
-    @apply w-full rounded-lg bg-transparent px-4 py-2 text-gray-700 outline-none transition-all duration-300 placeholder:text-gray-400 
-    focus:ring-2 focus:ring-blue-100 dark:text-gray-300;
+    @apply w-full rounded-lg bg-transparent px-4 py-2 pr-12 text-gray-700 outline-none transition-all duration-300 placeholder:text-gray-400 focus:text-gray-900 focus:placeholder:text-gray-500;
   }
 
   .task-submit-btn {
-    @apply absolute right-5 top-1/2 -translate-y-1/2 transform rounded-lg p-2
-    text-gray-400 transition-all duration-300 hover:text-blue-500 focus:outline-none;
+    @apply absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg bg-transparent text-gray-400 transition-all duration-300 ease-out hover:bg-blue-50 hover:text-blue-500 focus:outline-none active:scale-90 overflow-hidden;
+  }
+
+  .task-submit-btn.has-content {
+    @apply transform-gpu bg-blue-50/50 text-blue-500 hover:bg-blue-100 hover:text-blue-600 hover:scale-105;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Ripple effect */
+  .ripple {
+    @apply pointer-events-none absolute block rounded-full bg-blue-400/30 animate-ripple;
+    transform: translate(-50%, -50%);
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1) translateY(-50%);
+    }
+    50% {
+      transform: scale(1.05) translateY(-50%);
+    }
   }
 
   /* Task Section Dividers */
@@ -25,9 +43,7 @@
 
   /* Enhanced Task Items */
   .task-item {
-    @apply relative flex w-full items-center justify-between rounded-xl border border-transparent 
-           bg-white/60 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 
-           hover:translate-x-1 hover:border-blue-100/50 hover:shadow-md;
+    @apply relative flex w-full items-center justify-between rounded-xl border border-transparent bg-white/60 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 hover:translate-x-1 hover:border-blue-100/50 hover:shadow-md;
   }
 
   .task-checkbox {
@@ -47,65 +63,112 @@
     @apply rounded-lg p-4;
   }
 
+  .quadrant h3 {
+    @apply text-sm tracking-wide relative pl-7;
+  }
+
+  .quadrant h3::before {
+    @apply absolute left-0 text-lg;
+  }
+
   .quadrant-q1 {
     @apply border border-[#dc2626]/20 bg-red-50/50;
+  }
+
+  .quadrant-q1 h3::before {
+    content: "⚡";
   }
 
   .quadrant-q2 {
     @apply border border-[#2563eb]/20 bg-blue-50/50;
   }
 
+  .quadrant-q2 h3::before {
+    content: "🎯";
+  }
+
   .quadrant-q3 {
     @apply border border-[#f59e0b]/20 bg-amber-50/50;
+  }
+
+  .quadrant-q3 h3::before {
+    content: "⏳";
   }
 
   .quadrant-q4 {
     @apply border border-[#71717a]/20 bg-gray-50/50;
   }
 
-  /* Quadrant Indicators */
-  .quadrant-indicator {
-    @apply ml-2 hidden items-center text-sm group-hover:inline-flex;
+  .quadrant-q4 h3::before {
+    content: "➖";
   }
 
-  .quadrant-indicator-q1 {
-    @apply rounded-full bg-red-100/50 px-2 py-1 text-xs text-[#dc2626];
-  }
-
-  .quadrant-indicator-q2 {
-    @apply rounded-full bg-blue-100/50 px-2 py-1 text-xs text-[#2563eb];
-  }
-
-  .quadrant-indicator-q3 {
-    @apply rounded-full bg-amber-100/50 px-2 py-1 text-xs text-[#f59e0b];
-  }
-
-  .quadrant-indicator-q4 {
-    @apply rounded-full bg-gray-100/50 px-2 py-1 text-xs text-[#71717a];
+  .quadrant ul {
+    @apply space-y-2 min-h-[100px];
   }
 
   /* View Transitions */
-  .view-transition {
-    @apply transition-opacity duration-300 ease-in-out;
+  .view-list, .view-matrix {
+    @apply transition-all duration-300 ease-in-out;
+    opacity: 1;
+  }
+
+  .view-list.hidden, .view-matrix.hidden {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  /* Sync Button */
+  #sync-button {
+    @apply fixed bottom-6 right-6 flex items-center justify-center space-x-2 rounded-md bg-[#3d72fe] px-6 py-3 text-white transition-all duration-300 hover:bg-blue-600 hover:shadow-md active:scale-95 disabled:opacity-50;
+  }
+
+  #sync-button .sync-icon {
+    @apply transition-transform duration-300;
+  }
+
+  #sync-button:hover .sync-icon {
+    @apply rotate-180;
+  }
+
+  #sync-button.syncing .sync-icon {
+    @apply animate-spin;
+  }
+
+  #sync-button.syncing:hover .sync-icon {
+    @apply rotate-0;
+  }
+
+  /* Magic Sort Button */
+  #magic-sort-button {
+    @apply transition-all duration-300;
+  }
+
+  #magic-sort-button.sorting svg {
+    @apply animate-spin;
+  }
+
+  #magic-sort-button.sorting:hover svg {
+    @apply animate-spin;
   }
 }
 
 /* Styles that can't be handled by Tailwind */
 @layer utilities {
-  .quadrant-emoji::before {
-    @apply absolute right-2 opacity-50;
+  @keyframes ripple {
+    from {
+      width: 0px;
+      height: 0px;
+      opacity: 0.5;
+    }
+    to {
+      width: 100px;
+      height: 100px;
+      opacity: 0;
+    }
   }
 
-  .quadrant-q1::before {
-    content: "⚡";
-  }
-  .quadrant-q2::before {
-    content: "🎯";
-  }
-  .quadrant-q3::before {
-    content: "⏳";
-  }
-  .quadrant-q4::before {
-    content: "➖";
+  .animate-ripple {
+    animation: ripple 0.6s linear;
   }
 }

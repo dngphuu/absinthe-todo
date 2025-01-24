@@ -30,7 +30,7 @@
     >
       <div>
         <!-- Logo and App name -->
-        <h1
+          <h1
           class="flex items-center text-nowrap p-3 px-5 font-rubik text-2xl font-medium text-white"
         >
           <img
@@ -107,17 +107,20 @@
       <!-- Task Input Form -->
       <div class="task-input-container">
         <form id="add-task-form" class="relative">
+          <label for="task-input" class="sr-only">Add a new task</label>
           <input
             type="text"
             placeholder="✨ Add a new task..."
             class="task-input"
             id="task-input"
+            aria-label="Add a new task"
           />
           <button
             type="submit"
             title="Add task"
             id="add-task-btn"
             class="task-submit-btn"
+            aria-label="Submit new task"
           >
             <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path 
@@ -140,10 +143,12 @@
               id="magic-sort-button"
               class="flex items-center space-x-2 rounded-md bg-[#3d72fe] px-3 py-1.5 text-white transition-all duration-300 hover:bg-blue-600 hover:shadow-md active:scale-95 disabled:opacity-50"
             >
-              <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
-              </svg>
-              <span class="text-xs">Magic Sort</span>
+              <span class="flex items-center space-x-2">
+                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+                </svg>
+                <span class="text-xs">Magic Sort</span>
+              </span>
             </button>
 
             <button
@@ -174,11 +179,13 @@
                 type="checkbox"
                 class="task-checkbox mr-4 h-5 w-5 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 {% if task.completed %}checked{% endif %}
+                aria-label="Mark task as complete"
               />
               <input
                 type="text"
                 value="{{ task.content }}"
                 class="task-content flex-1 bg-transparent px-1 outline-none transition-all duration-200 focus:bg-gray-50 rounded-md focus:px-2"
+                aria-label="Task content"
               />
               <span class="quadrant-indicator ml-2 hidden group-hover:inline-flex items-center text-sm"></span>
             </div>
@@ -202,45 +209,41 @@
           <div class="grid grid-cols-2 gap-4">
             <!-- Q1: Urgent & Important -->
             <div class="quadrant quadrant-q1">
-              <h3 class="mb-4 flex items-center gap-2 font-medium text-[#dc2626]">
-                <span class="quadrant-indicator quadrant-indicator-q1">
-                  <span class="mr-2 text-lg">⚡</span>
+              <div class="mb-4 flex items-center justify-between">
+                <h3 class="flex items-center gap-2 font-medium text-[#dc2626]">
                   Urgent & Important
-                </span>
-              </h3>
+                </h3>
+              </div>
               <ul class="q1-tasks space-y-2"></ul>
             </div>
             
             <!-- Q2: Not Urgent & Important -->
             <div class="quadrant quadrant-q2">
-              <h3 class="mb-4 flex items-center gap-2 font-medium text-[#2563eb]">
-                <span class="quadrant-indicator quadrant-indicator-q2">
-                  <span class="mr-2 text-lg">🎯</span>
+              <div class="mb-4 flex items-center justify-between">
+                <h3 class="flex items-center gap-2 font-medium text-[#2563eb]">
                   Not Urgent & Important
-                </span>
-              </h3>
+                </h3>
+              </div>
               <ul class="q2-tasks space-y-2"></ul>
             </div>
             
             <!-- Q3: Urgent & Not Important -->
             <div class="quadrant quadrant-q3">
-              <h3 class="mb-4 flex items-center gap-2 font-medium text-[#f59e0b]">
-                <span class="quadrant-indicator quadrant-indicator-q3">
-                  <span class="mr-2 text-lg">⏳</span>
+              <div class="mb-4 flex items-center justify-between">
+                <h3 class="flex items-center gap-2 font-medium text-[#f59e0b]">
                   Urgent & Not Important
-                </span>
-              </h3>
+                </h3>
+              </div>
               <ul class="q3-tasks space-y-2"></ul>
             </div>
             
             <!-- Q4: Not Urgent & Not Important -->
             <div class="quadrant quadrant-q4">
-              <h3 class="mb-4 flex items-center gap-2 font-medium text-[#71717a]">
-                <span class="quadrant-indicator quadrant-indicator-q4">
-                  <span class="mr-2 text-lg">➖</span>
+              <div class="mb-4 flex items-center justify-between">
+                <h3 class="flex items-center gap-2 font-medium text-[#71717a]">
                   Not Urgent & Not Important
-                </span>
-              </h3>
+                </h3>
+              </div>
               <ul class="q4-tasks space-y-2"></ul>
             </div>
           </div>
