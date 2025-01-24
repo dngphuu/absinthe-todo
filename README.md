@@ -229,6 +229,12 @@ python app.py
 - GET `/oauth2callback` - OAuth callback
 - GET `/logout` - Logout user
 
+## Afterword
+
+- 90% of this project's code were written by AI (Copilot + Cline).
+- I know that I didn't follow the rules, but I still don't feel regret because I made a good app that I think will make life easier for everyone in some ways.
+- Send love to GDGoC PTIT! Love you guys for your mentoring 💖
+
 ## License
 
 MIT License
