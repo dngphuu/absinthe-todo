@@ -43,7 +43,7 @@
 
   /* Enhanced Task Items */
   .task-item {
-    @apply relative flex w-full items-center justify-between rounded-xl border border-transparent bg-white p-3 shadow-sm transition-all duration-200 hover:translate-x-1 hover:border-blue-100/50 hover:shadow-md;
+    @apply relative flex w-full items-center justify-between rounded-xl border border-transparent bg-white p-3 shadow-sm transition-all duration-200 ease-in-out hover:translate-x-1 hover:border-blue-100/50 hover:shadow-md;
   }
 
   .task-checkbox {
@@ -130,7 +130,7 @@
 
   /* Matrix view specific task styles */
   .view-matrix .task-item {
-    @apply hover:translate-y-[-2px] hover:shadow-md p-2.5 bg-white/80 backdrop-blur-sm;
+    @apply hover:translate-y-[-2px] hover:shadow-md bg-white/80 backdrop-blur-sm;
     animation: fade-in 0.3s ease-out;
   }
 

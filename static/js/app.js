@@ -262,15 +262,47 @@ const TaskManager = {
   /**
    * Creates DOM element for a task
    */
+  getTaskBaseClasses(quadrant, isMatrixView = false) {
+    const baseClasses = [
+      "task-item",
+      "group",
+      "relative",
+      "flex",
+      "w-full",
+      "items-center",
+      "justify-between",
+      "rounded-lg",
+      "border",
+      "p-3",
+      "transition-all",
+      "duration-200",
+      quadrant ? `quadrant-${quadrant.toLowerCase()}` : '',
+    ];
+
+    // Add view-specific classes
+    if (isMatrixView) {
+      baseClasses.push(
+        "hover:translate-y-[-2px]",
+        "hover:shadow-md"
+      );
+    } else {
+      baseClasses.push(
+        "hover:translate-x-1",
+        "hover:border-blue-100/50",
+        "hover:shadow-md"
+      );
+    }
+
+    return baseClasses.filter(Boolean);
+  },
+
   createTaskElement(task) {
-    return DOM.create(
+    const element = DOM.create(
       "li",
       {
         "data-id": task.id,
         "data-quadrant": task.quadrant,
-        class: `task-item group relative flex w-full items-center justify-between rounded-lg border p-3 transition-all duration-200 ${
-          task.quadrant ? `quadrant-${task.quadrant.toLowerCase()}` : ""
-        }`,
+        class: this.getTaskBaseClasses(task.quadrant).join(" ") + " opacity-0"
       },
       `
         <div class="flex items-center flex-1">
@@ -307,6 +339,14 @@ const TaskManager = {
         </div>
       `,
     );
+
+    // Trigger fade-in animation
+    requestAnimationFrame(() => {
+      element.classList.remove("opacity-0");
+      element.classList.add("transition-opacity", "duration-300");
+    });
+
+    return element;
   },
 
   /**
@@ -447,6 +487,10 @@ const SyncManager = {
         taskList.innerHTML = "";
         data.tasks.forEach((task) => {
           const taskElement = TaskManager.createTaskElement(task);
+          taskElement.style.opacity = "0";
+          requestAnimationFrame(() => {
+            taskElement.style.opacity = "1";
+          });
           taskList.appendChild(taskElement);
         });
 
@@ -526,6 +570,9 @@ const ViewManager = {
     // Update matrix view before animation if switching to matrix
     if (this.currentView === "list") {
       this.updateMatrixView();
+    } else {
+      // Restore list view animations
+      this.restoreListView();
     }
 
     // Toggle view type
@@ -574,6 +621,15 @@ const ViewManager = {
     }
   },
 
+  restoreListView() {
+    const tasks = Array.from(DOM.get("task-list").children);
+    tasks.forEach(task => {
+      const quadrant = task.getAttribute("data-quadrant");
+      // Re-apply base classes to ensure consistent padding and styles
+      task.className = TaskManager.getTaskBaseClasses(quadrant, false).join(" ");
+    });
+  },
+
   updateMatrixView() {
     const tasks = Array.from(DOM.get("task-list").children);
     const quadrants = document.querySelectorAll(".quadrant ul");
@@ -590,20 +646,10 @@ const ViewManager = {
 
       const clonedTask = task.cloneNode(true);
 
-      // Simplified matrix task styling
-      clonedTask.className = "task-item opacity-0 group";
-      clonedTask.classList.add(
-        "relative",
-        "flex",
-        "w-full",
-        "items-center",
-        "justify-between",
-        "rounded-lg",
-        "border",
-        "transition-all",
-        "duration-200",
-        `quadrant-${quadrant}`,
-      );
+      // Use consistent base classes with matrix-specific animations
+      clonedTask.className = TaskManager.getTaskBaseClasses(quadrant, true)
+        .concat(["opacity-0"])
+        .join(" ");
 
       // Remove quadrant indicator and simplify content
       const indicator = clonedTask.querySelector(".quadrant-indicator");
@@ -686,7 +732,7 @@ const MagicSortManager = {
         // Clear and rebuild task list
         taskList.innerHTML = "";
         
-        // Create all tasks first
+        // Create all tasks first with consistent styling
         const taskElements = data.tasks.map(task => {
           const taskElement = TaskManager.createTaskElement(task);
           taskElement.style.opacity = "0";
@@ -846,142 +892,99 @@ const EventHandlers = {
 // MODULE: Notification Manager
 //=============================================================================
 const NotificationManager = {
-  show(message, type = "info") {
-    const container = document.getElementById("notification-container");
-    if (!container) return;
+  createNotification({ type = 'info', title, message, duration = 8000, icon }) {
+    const container = document.getElementById('notification-container');
+    if (!container) return null;
 
-    const iconSvg =
-      type === "success"
-        ? '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
-        : '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+    // Remove existing notifications of the same type
+    const existing = container.querySelector(`.notification.${type}`);
+    if (existing) existing.remove();
 
-    const notification = document.createElement("div");
+    const icons = {
+      success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>',
+      error: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>',
+      warning: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>',
+      loading: `
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+      `
+    };
+
+    const notification = document.createElement('div');
     notification.className = `notification ${type}`;
+    
     notification.innerHTML = `
-      <div class="notification-icon">
-        ${iconSvg}
-      </div>
-      <span class="notification-content">${message}</span>
-      <button class="notification-dismiss" aria-label="Dismiss">
+      <div class="notification-icon ${type === 'loading' ? 'animate-spin' : ''}">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          ${icon || icons[type] || icons.info}
         </svg>
-      </button>
+      </div>
+      <div class="flex-1">
+        ${title ? `<div class="font-medium text-sm">${title}</div>` : ''}
+        <div class="text-xs ${type === 'warning' ? 'text-amber-700/80' : 'text-gray-500'}">${message}</div>
+      </div>
+      ${type !== 'loading' ? `
+        <button class="notification-dismiss" aria-label="Dismiss">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      ` : ''}
     `;
 
     const dismiss = () => {
-      notification.classList.add("removing");
-      notification.addEventListener("animationend", () => {
+      notification.classList.add('removing');
+      notification.addEventListener('animationend', () => {
         notification.remove();
         if (container.children.length === 0) {
-          container.classList.add("hidden");
+          container.classList.add('hidden');
         }
       });
     };
 
-    // Clear existing notifications of the same type
-    const existing = container.querySelectorAll(`.notification.${type}`);
-    existing.forEach((el) => el.remove());
+    if (type !== 'loading') {
+      // Add dismiss button handler
+      notification.querySelector('.notification-dismiss')?.addEventListener('click', dismiss);
 
-    // Show container if hidden
-    container.classList.remove("hidden");
+      // Auto dismiss after duration
+      if (duration > 0) {
+        let dismissTimeout;
+        const startDismissTimer = () => dismissTimeout = setTimeout(dismiss, duration);
+        const pauseDismissTimer = () => clearTimeout(dismissTimeout);
 
-    // Add and animate notification
-    notification.style.opacity = "0";
-    container.appendChild(notification);
+        notification.addEventListener('mouseenter', pauseDismissTimer);
+        notification.addEventListener('mouseleave', startDismissTimer);
+        startDismissTimer();
+      }
+    }
 
-    // Trigger reflow for smooth animation
-    notification.offsetHeight;
-    notification.style.opacity = "1";
+    container.classList.remove('hidden');
+    container.prepend(notification);
+    
+    return notification;
+  },
 
-    // Add event listeners
-    notification
-      .querySelector(".notification-dismiss")
-      .addEventListener("click", dismiss);
-    setTimeout(dismiss, 8000);
-
-    // Add hover pause functionality
-    let dismissTimeout;
-    const startDismissTimer = () => {
-      dismissTimeout = setTimeout(dismiss, 8000);
-    };
-    const pauseDismissTimer = () => {
-      clearTimeout(dismissTimeout);
-    };
-
-    notification.addEventListener("mouseenter", pauseDismissTimer);
-    notification.addEventListener("mouseleave", startDismissTimer);
+  show(message, type = 'info') {
+    return this.createNotification({ type, message });
   },
 
   showLoading(title, message) {
-    const container = document.getElementById("notification-container");
-    if (!container) return;
-
-    // Remove any existing loading notifications
-    const existing = container.querySelector(".notification.loading");
-    if (existing) existing.remove();
-
-    const notification = document.createElement("div");
-    notification.className = "notification loading";
-    notification.innerHTML = `
-      <div class="notification-icon loading">
-        <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-      </div>
-      <div class="flex-1">
-        <div class="font-medium text-sm">${title}</div>
-        <div class="text-xs text-gray-500">${message}</div>
-      </div>
-    `;
-
-    container.prepend(notification);
-    container.classList.remove("hidden");
-
-    return notification;
+    return this.createNotification({ 
+      type: 'loading', 
+      title, 
+      message, 
+      duration: 0 
+    });
   },
 
   showWarning(title, message, duration = 5000) {
-    const container = document.getElementById("notification-container");
-    if (!container) return;
-
-    const notification = document.createElement("div");
-    notification.className = "notification warning";
-    notification.innerHTML = `
-      <div class="notification-icon">
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
-      </div>
-      <div class="flex-1">
-        <div class="font-medium text-sm">${title}</div>
-        <div class="text-xs text-amber-700/80">${message}</div>
-      </div>
-    `;
-
-    // Remove any existing warning notifications
-    const existing = container.querySelector(".notification.warning");
-    if (existing) existing.remove();
-
-    container.prepend(notification);
-    container.classList.remove("hidden");
-
-    // Auto dismiss after duration
-    setTimeout(() => {
-      notification.classList.add("removing");
-      notification.addEventListener("animationend", () => {
-        notification.remove();
-        if (container.children.length === 0) {
-          container.classList.add("hidden");
-        }
-      });
-    }, duration);
-
-    return notification;
-  },
+    return this.createNotification({ 
+      type: 'warning', 
+      title, 
+      message, 
+      duration 
+    });
+  }
 };
 
 //=============================================================================
@@ -995,6 +998,9 @@ function initializeApp() {
   EventHandlers.init();
   TaskManager.init();
   ViewManager.init();
+
+  // Restore list view to apply consistent styles and animations
+  ViewManager.restoreListView();
 
   // Show guidance to user about syncing
   NotificationManager.showWarning(

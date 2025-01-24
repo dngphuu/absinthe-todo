@@ -21,16 +21,6 @@
       "importance": 4
     },
     {
-      "id": "6668c23e-394f-4db7-ae6e-36aa4fc9f729",
-      "content": "Go to the gym",
-      "completed": false,
-      "created_at": "2025-01-25T00:17:39.110809",
-      "updated_at": "2025-01-25T00:17:39.110815",
-      "quadrant": "Q4",
-      "urgency": 3,
-      "importance": 3
-    },
-    {
       "id": "825c77cc-1e52-4c4b-acb7-6e7ced59da38",
       "content": "Cooking",
       "completed": false,
@@ -59,17 +49,7 @@
       "quadrant": "Q4",
       "urgency": 1,
       "importance": 3
-    },
-    {
-      "id": "c990f46f-8821-44de-b9bf-c90f41a7f6c9",
-      "content": "Try hard Valorant to radiant",
-      "completed": false,
-      "created_at": "2025-01-25T01:11:13.570287",
-      "updated_at": "2025-01-25T01:11:13.570294",
-      "quadrant": "Q4",
-      "urgency": 1,
-      "importance": 2
     }
   ],
-  "last_sync": "2025-01-25T03:06:03.777526"
+  "last_sync": "2025-01-25T03:35:05.597249"
 }
