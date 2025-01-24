@@ -1,134 +1,125 @@
+[Previous content up to EventHandlers module remains the same...]
+
 //=============================================================================
-// UTILITIES
+// MODULE: Event Handlers
 //=============================================================================
-const Utils = {
-  debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
+const EventHandlers = {
+  init() {
+    this.initTaskHandlers();
+    this.initGlobalHandlers();
+    this.initButtonHandlers();
+  },
+
+  initTaskHandlers() {
+    const taskInput = document.querySelector(".task-input");
+    const addTaskBtn = document.querySelector(".task-submit-btn");
+
+    const handleTaskSubmit = async (e) => {
+      e?.preventDefault();
+      const content = taskInput?.value.trim();
+      if (content) {
+        await TaskManager.createTask(content);
+      }
     };
+
+    taskInput?.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") handleTaskSubmit(e);
+    });
+
+    addTaskBtn?.addEventListener("click", handleTaskSubmit);
   },
 
-  handleError(error, customMessage = "An error occurred") {
-    console.error(error);
-    alert(`${customMessage}: ${error.message}`);
+  initGlobalHandlers() {
+    // Task checkbox changes
+    document.addEventListener("change", (e) => {
+      if (e.target.classList.contains("task-checkbox")) {
+        const taskElement = e.target.closest("li");
+        const taskId = taskElement.getAttribute("data-id");
+        const completed = e.target.checked;
+        const content = taskElement.querySelector(".task-content").value;
+        TaskManager.updateTask(taskId, content, completed);
+      }
+    });
+
+    // Task deletion
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".task-delete")) {
+        const taskId = e.target.closest("li").getAttribute("data-id");
+        TaskManager.deleteTask(taskId);
+      }
+    });
+
+    // Task content handling
+    document.addEventListener("keypress", (e) => {
+      if (e.target.classList.contains("task-content") && e.key === "Enter") {
+        e.preventDefault();
+        e.target.blur();
+      }
+    });
+
+    document.addEventListener("focusout", (e) => {
+      if (e.target.classList.contains("task-content")) {
+        const taskElement = e.target.closest("li");
+        const taskId = taskElement.getAttribute("data-id");
+        const content = e.target.value.trim();
+        const completed = taskElement.querySelector(".task-checkbox").checked;
+
+        if (content !== "" && content !== e.target.defaultValue) {
+          TaskManager.updateTask(taskId, content, completed);
+          e.target.defaultValue = content;
+        } else if (content === "") {
+          e.target.value = e.target.defaultValue;
+        }
+      }
+    });
   },
 
-  handleSuccess(message) {
-    alert(message);
-  },
+  initButtonHandlers() {
+    // Sync button
+    DOM.get("sync-button")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      await SyncManager.syncTasks();
+    });
 
-  isValidContent(content) {
-    return typeof content === "string" && content.trim().length > 0;
-  },
+    // Magic sort button
+    DOM.get("magic-sort-button")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await MagicSortManager.sortTasks();
+    });
 
-  wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    // View toggle button
+    DOM.get("view-toggle-button")?.addEventListener("click", () => {
+      ViewManager.toggleView();
+    });
   }
 };
 
 //=============================================================================
-// MODULE: Loading State Manager
+// MODULE: User Menu Controller
 //=============================================================================
-const LoadingState = {
-  isLoading: false,
-  elements: new Set(),
-
-  start(element) {
-    if (!element) return;
-    this.isLoading = true;
-    this.elements.add(element);
-    element.disabled = true;
-    element.classList.add("opacity-50", "cursor-wait");
-  },
-
-  stop(element) {
-    if (!element) return;
-    this.isLoading = false;
-    this.elements.delete(element);
-    element.disabled = false;
-    element.classList.remove("opacity-50", "cursor-wait");
-  },
-};
-
-//=============================================================================
-// MODULE: DOM Elements
-//=============================================================================
-const DOM = {
-  elements: {
-    userInfo: document.getElementById("user-info"),
-    logoutMenu: document.getElementById("logout-menu"),
-    taskInput: document.getElementById("task-input"),
-    addTaskIcon: document.getElementById("add-task-icon"),
-    taskList: document.getElementById("task-list"),
-    addTaskBtn: document.getElementById("add-task-btn"),
-    syncButton: document.getElementById("sync-button"),
-  },
-
-  get(id) {
-    return this.elements[id] || document.getElementById(id);
-  },
-
-  create(tag, attributes = {}, content = "") {
-    const element = document.createElement(tag);
-    Object.entries(attributes).forEach(([key, value]) => {
-      element.setAttribute(key, value);
-    });
-    if (content) element.innerHTML = content;
-    return element;
-  },
-};
-
-//=============================================================================
-// MODULE: User Interface Controls
-//=============================================================================
-/**
- * Controls the visibility and animation of the logout menu
- */
 const UserMenuController = {
   isMenuOpen: false,
 
-  toggleLogoutMenu(show) {
-    if (!DOM.get("userInfo") || !DOM.get("logoutMenu")) return;
-
-    if (show) {
-      DOM.get("logoutMenu").classList.remove("hidden");
-      // Use requestAnimationFrame to ensure proper transition
-      requestAnimationFrame(() => {
-        DOM.get("logoutMenu").classList.remove("-translate-y-4", "opacity-0");
-        DOM.get("logoutMenu").classList.add("translate-y-0", "opacity-100");
-      });
-    } else {
-      DOM.get("logoutMenu").classList.add("-translate-y-4", "opacity-0");
-      DOM.get("logoutMenu").classList.remove("translate-y-0", "opacity-100");
-      setTimeout(() => DOM.get("logoutMenu").classList.add("hidden"), 300);
-    }
-  },
-
   init() {
     if (!DOM.get("userInfo") || !DOM.get("logoutMenu")) return;
+    this.initEventListeners();
+  },
 
+  initEventListeners() {
     // Click handler
     DOM.get("userInfo").addEventListener("click", (e) => {
       e.stopPropagation();
-      this.isMenuOpen = !this.isMenuOpen;
-      this.toggleLogoutMenu(this.isMenuOpen);
+      this.toggleMenu();
     });
 
     // Keyboard navigation
     DOM.get("userInfo").addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        this.isMenuOpen = !this.isMenuOpen;
-        this.toggleLogoutMenu(this.isMenuOpen);
+        this.toggleMenu();
       } else if (e.key === "Escape" && this.isMenuOpen) {
-        this.isMenuOpen = false;
-        this.toggleLogoutMenu(false);
+        this.closeMenu();
       }
     });
 
@@ -139,11 +130,27 @@ const UserMenuController = {
         !DOM.get("userInfo").contains(e.target) &&
         !DOM.get("logoutMenu").contains(e.target)
       ) {
-        this.isMenuOpen = false;
-        this.toggleLogoutMenu(false);
+        this.closeMenu();
       }
     });
   },
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+    this.updateMenuState();
+  },
+
+  closeMenu() {
+    this.isMenuOpen = false;
+    this.updateMenuState();
+  },
+
+  updateMenuState() {
+    const menu = DOM.get("logoutMenu");
+    menu.classList.toggle("hidden", !this.isMenuOpen);
+    menu.style.opacity = this.isMenuOpen ? "1" : "0";
+    menu.style.transform = this.isMenuOpen ? "translateY(0)" : "translateY(-4px)";
+  }
 };
 
 //=============================================================================
@@ -171,6 +178,7 @@ const TaskManager = {
       if (data.status === "success") {
         const taskElement = this.createTaskElement(data.task);
         DOM.get("taskList").appendChild(taskElement);
+        ViewManager.checkTasksSorted();
         this.resetStyles();
       } else {
         alert(data.message);
@@ -206,6 +214,7 @@ const TaskManager = {
           taskElement.querySelector(".task-content").value = data.task.content;
           taskElement.querySelector(".task-checkbox").checked =
             data.task.completed;
+          ViewManager.checkTasksSorted();
         }
       } else {
         alert(data.message);
@@ -236,6 +245,7 @@ const TaskManager = {
         const taskElement = document.querySelector(`li[data-id='${taskId}']`);
         if (taskElement) {
           taskElement.remove();
+          ViewManager.checkTasksSorted();
         }
       } else {
         alert(data.message);
@@ -458,6 +468,7 @@ const SyncManager = {
           const taskElement = TaskManager.createTaskElement(task);
           taskList.appendChild(taskElement);
         });
+        ViewManager.checkTasksSorted();
         Utils.handleSuccess("Tasks synced successfully!");
       } else {
         throw new Error(data.message || "Sync failed");
@@ -481,7 +492,11 @@ const ViewManager = {
   isTasksSorted: false,
 
   toggleView() {
-    if (!this.isTasksSorted) return;
+    if (!this.isTasksSorted) {
+      const viewButton = DOM.get("view-toggle-button");
+      viewButton.title = "Tasks are not sorted yet. Please sort the tasks before use matrix view";
+      return;
+    }
 
     const listView = DOM.get("task-list");
     const matrixView = DOM.get("matrix-view");
@@ -626,6 +641,7 @@ const ViewManager = {
     this.isTasksSorted = true;
     const viewButton = DOM.get("view-toggle-button");
     viewButton.disabled = false;
+    viewButton.title = ""; // Clear the tooltip
     viewButton.classList.remove("text-gray-400", "bg-gray-100");
     viewButton.classList.add(
       "text-gray-700",
@@ -633,6 +649,33 @@ const ViewManager = {
       "border",
       "border-gray-200",
     );
+  },
+
+  checkTasksSorted() {
+    // Check if all tasks have quadrant classes
+    const tasks = Array.from(DOM.get("task-list").children);
+    const allSorted = tasks.every(task => {
+      return task.classList.contains('quadrant-q1') || 
+             task.classList.contains('quadrant-q2') || 
+             task.classList.contains('quadrant-q3') || 
+             task.classList.contains('quadrant-q4');
+    });
+    
+    if (allSorted) {
+      this.enableViewToggle();
+    } else {
+      this.isTasksSorted = false;
+      const viewButton = DOM.get("view-toggle-button");
+      viewButton.disabled = true;
+      viewButton.title = "Tasks are not sorted yet. Please sort the tasks before use matrix view";
+      viewButton.classList.add("text-gray-400", "bg-gray-100");
+      viewButton.classList.remove(
+        "text-gray-700",
+        "bg-white",
+        "border",
+        "border-gray-200",
+      );
+    }
   },
 };
 
@@ -712,112 +755,10 @@ const MagicSortManager = {
 };
 
 //=============================================================================
-// MODULE: Event Handlers
-//=============================================================================
-const EventHandlers = {
-  init() {
-    const taskInput = document.querySelector(".task-input");
-    const addTaskBtn = document.querySelector(".task-submit-btn");
-
-    // Task input handlers
-    const handleTaskSubmit = async (e) => {
-      e?.preventDefault();
-      const content = taskInput.value.trim();
-      if (content) {
-        await TaskManager.createTask(content);
-      }
-    };
-
-    if (taskInput) {
-      taskInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") handleTaskSubmit(e);
-      });
-    }
-
-    if (addTaskBtn) {
-      addTaskBtn.addEventListener("click", handleTaskSubmit);
-    }
-
-    // Keep the rest of the event handlers
-    document.addEventListener("change", function (e) {
-      if (e.target.classList.contains("task-checkbox")) {
-        const taskId = e.target.closest("li").getAttribute("data-id");
-        const completed = e.target.checked;
-        const content = e.target
-          .closest("li")
-          .querySelector(".task-content").value;
-        TaskManager.updateTask(taskId, content, completed);
-      }
-    });
-
-    document.addEventListener("click", function (e) {
-      if (e.target.closest(".task-delete")) {
-        const taskId = e.target.closest("li").getAttribute("data-id");
-        TaskManager.deleteTask(taskId);
-      }
-    });
-
-    document.addEventListener("keypress", function (e) {
-      if (e.target.classList.contains("task-content") && e.key === "Enter") {
-        e.preventDefault();
-        e.target.blur();
-      }
-    });
-
-    document.addEventListener("focusout", function (e) {
-      if (e.target.classList.contains("task-content")) {
-        const taskId = e.target.closest("li").getAttribute("data-id");
-        const content = e.target.value.trim();
-        const completed = e.target
-          .closest("li")
-          .querySelector(".task-checkbox").checked;
-
-        // Only update if content has changed and is not empty
-        if (content !== "" && content !== e.target.defaultValue) {
-          TaskManager.updateTask(taskId, content, completed);
-          e.target.defaultValue = content; // Update default value to track changes
-        } else if (content === "") {
-          // Revert to previous value if empty
-          e.target.value = e.target.defaultValue;
-        }
-      }
-    });
-
-    // Sync button handler
-    if (DOM.get("sync-button")) {
-      DOM.get("sync-button").addEventListener("click", async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        await SyncManager.syncTasks();
-      });
-    }
-
-    // Add magic sort button handler
-    if (DOM.get("magic-sort-button")) {
-      DOM.get("magic-sort-button").addEventListener("click", async (e) => {
-        e.preventDefault();
-        await MagicSortManager.sortTasks();
-      });
-    }
-
-    // Add view toggle button handler
-    if (DOM.get("view-toggle-button")) {
-      DOM.get("view-toggle-button").addEventListener("click", () => {
-        ViewManager.toggleView();
-      });
-    }
-
-  },
-};
-
-//=============================================================================
 // Initialize Application
 //=============================================================================
-// Start the application when DOM is ready
-document.addEventListener("DOMContentLoaded", initializeApp);
-
-function initializeApp() {
+document.addEventListener("DOMContentLoaded", () => {
   UserMenuController.init();
   EventHandlers.init();
   TaskManager.init();
-}
+});

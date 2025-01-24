@@ -27,6 +27,7 @@ package-lock.json
 # Secrets
 credentials.json
 tasks.json
+sorted_tasks.json
 
 # OS
 .DS_Store
