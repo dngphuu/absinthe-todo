@@ -669,45 +669,43 @@ const MagicSortManager = {
     try {
       LoadingState.start(button);
       button.classList.add("sorting");
-      // Remove the nonexistent SyncManager.setLoadingState call
 
       const response = await fetch("/magic-sort", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok)
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
 
       if (data.status === "success" && Array.isArray(data.tasks)) {
-        // Fade out and update tasks
+        // Fade out current tasks
         taskList.style.opacity = "0";
         await Utils.wait(300);
 
-        // Update task list
+        // Clear and rebuild task list
         taskList.innerHTML = "";
-        data.tasks.forEach((task) => {
+        
+        // Create all tasks first
+        const taskElements = data.tasks.map(task => {
           const taskElement = TaskManager.createTaskElement(task);
           taskElement.style.opacity = "0";
           taskElement.style.transform = "translateX(-10px)";
-          taskList.appendChild(taskElement);
+          return taskElement;
         });
 
-        // After updating tasks, also update matrix view if we're in matrix view
-        if (ViewManager.currentView === "matrix") {
-          ViewManager.updateMatrixView();
-        }
+        // Add tasks to DOM
+        taskElements.forEach(element => taskList.appendChild(element));
 
-        // Fade in tasks sequentially
+        // Show task list container
         await Utils.wait(100);
         taskList.style.opacity = "1";
 
-        const tasks = Array.from(taskList.children);
-        const animationPromises = tasks.map((task, index) => {
+        // Animate each task sequentially
+        const animationPromises = taskElements.map((task, index) => {
           return new Promise((resolve) => {
             setTimeout(() => {
-              task.style.transition = "all 300ms ease-in-out";
+              task.style.transition = "all 300ms cubic-bezier(0.4, 0, 0.2, 1)";
               task.style.opacity = "1";
               task.style.transform = "translateX(0)";
               resolve();
@@ -715,9 +713,13 @@ const MagicSortManager = {
           });
         });
 
-        // Wait for all animations to complete
+        // Wait for all task animations
         await Promise.all(animationPromises);
-        await Utils.wait(300); // Additional wait for final animation
+        
+        // Update matrix view if needed
+        if (ViewManager.currentView === "matrix") {
+          ViewManager.updateMatrixView();
+        }
 
         ViewManager.updateViewButton();
         Utils.handleSuccess("Tasks sorted successfully!");
@@ -727,11 +729,16 @@ const MagicSortManager = {
     } catch (error) {
       Utils.handleError(error, "Sort failed");
     } finally {
-      // Ensure loading states are cleared after all animations
-      await Utils.wait(300); // Wait for animations to complete
+      await Utils.wait(300);
       LoadingState.stop(button);
       button.classList.remove("sorting");
-      // Remove the nonexistent SyncManager.setLoadingState call
+      
+      // Cleanup transitions
+      const tasks = taskList.querySelectorAll('.task-item');
+      tasks.forEach(task => {
+        task.style.transition = '';
+        task.style.transform = '';
+      });
     }
   },
 };
