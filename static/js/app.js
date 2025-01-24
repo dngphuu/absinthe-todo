@@ -183,8 +183,17 @@ const TaskManager = {
 
       if (data.status === "success") {
         const taskElement = this.createTaskElement(data.task);
-        DOM.get("taskList").appendChild(taskElement);
+        const taskList = DOM.get("taskList");
+
+        taskList.appendChild(taskElement);
+        this.animateTaskElement(taskElement);
+
         this.resetStyles();
+
+        // Update matrix view if needed
+        if (ViewManager.currentView === "matrix") {
+          ViewManager.updateMatrixView();
+        }
       } else {
         alert(data.message);
       }
@@ -276,20 +285,17 @@ const TaskManager = {
       "p-3",
       "transition-all",
       "duration-200",
-      quadrant ? `quadrant-${quadrant.toLowerCase()}` : '',
+      quadrant ? `quadrant-${quadrant.toLowerCase()}` : "",
     ];
 
     // Add view-specific classes
     if (isMatrixView) {
-      baseClasses.push(
-        "hover:translate-y-[-2px]",
-        "hover:shadow-md"
-      );
+      baseClasses.push("hover:translate-y-[-2px]", "hover:shadow-md");
     } else {
       baseClasses.push(
         "hover:translate-x-1",
         "hover:border-blue-100/50",
-        "hover:shadow-md"
+        "hover:shadow-md",
       );
     }
 
@@ -302,7 +308,8 @@ const TaskManager = {
       {
         "data-id": task.id,
         "data-quadrant": task.quadrant,
-        class: this.getTaskBaseClasses(task.quadrant).join(" ") + " opacity-0"
+        // Remove opacity-0 from initial class and don't add transition classes here
+        class: this.getTaskBaseClasses(task.quadrant).join(" "),
       },
       `
         <div class="flex items-center flex-1">
@@ -340,11 +347,8 @@ const TaskManager = {
       `,
     );
 
-    // Trigger fade-in animation
-    requestAnimationFrame(() => {
-      element.classList.remove("opacity-0");
-      element.classList.add("transition-opacity", "duration-300");
-    });
+    // Remove the requestAnimationFrame animation code here
+    // (We'll handle animations in the calling functions)
 
     return element;
   },
@@ -448,6 +452,84 @@ const TaskManager = {
   init() {
     this.handleTaskInputFocus();
   },
+
+  animateTaskElement(taskElement, index = 0) {
+    taskElement.classList.add("task-enter");
+    taskElement.style.transitionDelay = `${index * 50}ms`;
+
+    // Force reflow
+    taskElement.offsetHeight;
+
+    requestAnimationFrame(() => {
+      taskElement.classList.add("task-enter-active");
+      taskElement.classList.remove("task-enter");
+
+      // Cleanup
+      taskElement.addEventListener(
+        "transitionend",
+        () => {
+          taskElement.classList.remove("task-enter-active");
+          taskElement.style.transitionDelay = "";
+        },
+        { once: true },
+      );
+    });
+  },
+
+  async updateTaskList(tasks, container) {
+    // Fade out container if it has content
+    if (container.children.length > 0) {
+      container.classList.add("task-container-fade");
+      container.style.opacity = "0";
+      await Utils.wait(200);
+    }
+
+    // Clear and add new tasks
+    container.innerHTML = "";
+
+    // Create all tasks first
+    const taskElements = tasks.map((task) => this.createTaskElement(task));
+
+    // Add all tasks to DOM
+    taskElements.forEach((element) => {
+      element.style.opacity = "0";
+      element.style.transform = "translateY(15px)";
+      container.appendChild(element);
+    });
+
+    // Show container
+    container.style.opacity = "1";
+
+    // Animate tasks sequentially
+    await Utils.wait(50); // Small delay for better visual effect
+
+    taskElements.forEach((task, index) => {
+      setTimeout(() => {
+        task.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+        task.style.opacity = "1";
+        task.style.transform = "translateY(0)";
+
+        // Cleanup after animation
+        task.addEventListener(
+          "transitionend",
+          () => {
+            task.style.transition = "";
+            task.style.transform = "";
+          },
+          { once: true },
+        );
+      }, index * 50);
+    });
+
+    return new Promise((resolve) => {
+      const lastIndex = taskElements.length - 1;
+      if (lastIndex >= 0) {
+        setTimeout(resolve, lastIndex * 50 + 300);
+      } else {
+        resolve();
+      }
+    });
+  },
 };
 
 //=============================================================================
@@ -463,11 +545,11 @@ const SyncManager = {
     const syncButton = DOM.get("sync-button");
     LoadingState.start(syncButton);
     syncButton.classList.add("syncing");
-    
+
     // Store reference to loading notification
     const loadingNotification = NotificationManager.showLoading(
       "Syncing tasks...",
-      "Please wait while we sync your tasks"
+      "Please wait while we sync your tasks",
     );
 
     try {
@@ -483,16 +565,7 @@ const SyncManager = {
       const data = await response.json();
 
       if (data.status === "success" && Array.isArray(data.tasks)) {
-        const taskList = DOM.get("taskList");
-        taskList.innerHTML = "";
-        data.tasks.forEach((task) => {
-          const taskElement = TaskManager.createTaskElement(task);
-          taskElement.style.opacity = "0";
-          requestAnimationFrame(() => {
-            taskElement.style.opacity = "1";
-          });
-          taskList.appendChild(taskElement);
-        });
+        await TaskManager.updateTaskList(data.tasks, DOM.get("taskList"));
 
         // Update last synced time
         const lastSyncedSpan = document.getElementById("last-synced");
@@ -508,15 +581,15 @@ const SyncManager = {
 
         // Remove loading notification before showing success
         if (loadingNotification) {
-          loadingNotification.classList.add('removing');
-          await new Promise(resolve => {
-            loadingNotification.addEventListener('animationend', () => {
+          loadingNotification.classList.add("removing");
+          await new Promise((resolve) => {
+            loadingNotification.addEventListener("animationend", () => {
               loadingNotification.remove();
               resolve();
             });
           });
         }
-        
+
         // Show success notification
         NotificationManager.show("Tasks synced successfully!", "success");
       } else {
@@ -623,10 +696,12 @@ const ViewManager = {
 
   restoreListView() {
     const tasks = Array.from(DOM.get("task-list").children);
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
       const quadrant = task.getAttribute("data-quadrant");
       // Re-apply base classes to ensure consistent padding and styles
-      task.className = TaskManager.getTaskBaseClasses(quadrant, false).join(" ");
+      task.className = TaskManager.getTaskBaseClasses(quadrant, false).join(
+        " ",
+      );
     });
   },
 
@@ -721,47 +796,13 @@ const MagicSortManager = {
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
 
       if (data.status === "success" && Array.isArray(data.tasks)) {
-        // Fade out current tasks
-        taskList.style.opacity = "0";
-        await Utils.wait(300);
+        await TaskManager.updateTaskList(data.tasks, DOM.get("taskList"));
 
-        // Clear and rebuild task list
-        taskList.innerHTML = "";
-        
-        // Create all tasks first with consistent styling
-        const taskElements = data.tasks.map(task => {
-          const taskElement = TaskManager.createTaskElement(task);
-          taskElement.style.opacity = "0";
-          taskElement.style.transform = "translateX(-10px)";
-          return taskElement;
-        });
-
-        // Add tasks to DOM
-        taskElements.forEach(element => taskList.appendChild(element));
-
-        // Show task list container
-        await Utils.wait(100);
-        taskList.style.opacity = "1";
-
-        // Animate each task sequentially
-        const animationPromises = taskElements.map((task, index) => {
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              task.style.transition = "all 300ms cubic-bezier(0.4, 0, 0.2, 1)";
-              task.style.opacity = "1";
-              task.style.transform = "translateX(0)";
-              resolve();
-            }, index * 50);
-          });
-        });
-
-        // Wait for all task animations
-        await Promise.all(animationPromises);
-        
         // Update matrix view if needed
         if (ViewManager.currentView === "matrix") {
           ViewManager.updateMatrixView();
@@ -778,12 +819,12 @@ const MagicSortManager = {
       await Utils.wait(300);
       LoadingState.stop(button);
       button.classList.remove("sorting");
-      
+
       // Cleanup transitions
-      const tasks = taskList.querySelectorAll('.task-item');
-      tasks.forEach(task => {
-        task.style.transition = '';
-        task.style.transform = '';
+      const tasks = taskList.querySelectorAll(".task-item");
+      tasks.forEach((task) => {
+        task.style.transition = "";
+        task.style.transform = "";
       });
     }
   },
@@ -892,8 +933,8 @@ const EventHandlers = {
 // MODULE: Notification Manager
 //=============================================================================
 const NotificationManager = {
-  createNotification({ type = 'info', title, message, duration = 8000, icon }) {
-    const container = document.getElementById('notification-container');
+  createNotification({ type = "info", title, message, duration = 8000, icon }) {
+    const container = document.getElementById("notification-container");
     if (!container) return null;
 
     // Remove existing notifications of the same type
@@ -901,90 +942,100 @@ const NotificationManager = {
     if (existing) existing.remove();
 
     const icons = {
-      success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>',
-      error: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>',
-      warning: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>',
+      success:
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>',
+      error:
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>',
+      warning:
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>',
       loading: `
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-      `
+      `,
     };
 
-    const notification = document.createElement('div');
+    const notification = document.createElement("div");
     notification.className = `notification ${type}`;
-    
+
     notification.innerHTML = `
-      <div class="notification-icon ${type === 'loading' ? 'animate-spin' : ''}">
+      <div class="notification-icon ${type === "loading" ? "animate-spin" : ""}">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           ${icon || icons[type] || icons.info}
         </svg>
       </div>
       <div class="flex-1">
-        ${title ? `<div class="font-medium text-sm">${title}</div>` : ''}
-        <div class="text-xs ${type === 'warning' ? 'text-amber-700/80' : 'text-gray-500'}">${message}</div>
+        ${title ? `<div class="font-medium text-sm">${title}</div>` : ""}
+        <div class="text-xs ${type === "warning" ? "text-amber-700/80" : "text-gray-500"}">${message}</div>
       </div>
-      ${type !== 'loading' ? `
+      ${
+        type !== "loading"
+          ? `
         <button class="notification-dismiss" aria-label="Dismiss">
           <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
-      ` : ''}
+      `
+          : ""
+      }
     `;
 
     const dismiss = () => {
-      notification.classList.add('removing');
-      notification.addEventListener('animationend', () => {
+      notification.classList.add("removing");
+      notification.addEventListener("animationend", () => {
         notification.remove();
         if (container.children.length === 0) {
-          container.classList.add('hidden');
+          container.classList.add("hidden");
         }
       });
     };
 
-    if (type !== 'loading') {
+    if (type !== "loading") {
       // Add dismiss button handler
-      notification.querySelector('.notification-dismiss')?.addEventListener('click', dismiss);
+      notification
+        .querySelector(".notification-dismiss")
+        ?.addEventListener("click", dismiss);
 
       // Auto dismiss after duration
       if (duration > 0) {
         let dismissTimeout;
-        const startDismissTimer = () => dismissTimeout = setTimeout(dismiss, duration);
+        const startDismissTimer = () =>
+          (dismissTimeout = setTimeout(dismiss, duration));
         const pauseDismissTimer = () => clearTimeout(dismissTimeout);
 
-        notification.addEventListener('mouseenter', pauseDismissTimer);
-        notification.addEventListener('mouseleave', startDismissTimer);
+        notification.addEventListener("mouseenter", pauseDismissTimer);
+        notification.addEventListener("mouseleave", startDismissTimer);
         startDismissTimer();
       }
     }
 
-    container.classList.remove('hidden');
+    container.classList.remove("hidden");
     container.prepend(notification);
-    
+
     return notification;
   },
 
-  show(message, type = 'info') {
+  show(message, type = "info") {
     return this.createNotification({ type, message });
   },
 
   showLoading(title, message) {
-    return this.createNotification({ 
-      type: 'loading', 
-      title, 
-      message, 
-      duration: 0 
+    return this.createNotification({
+      type: "loading",
+      title,
+      message,
+      duration: 0,
     });
   },
 
   showWarning(title, message, duration = 5000) {
-    return this.createNotification({ 
-      type: 'warning', 
-      title, 
-      message, 
-      duration 
+    return this.createNotification({
+      type: "warning",
+      title,
+      message,
+      duration,
     });
-  }
+  },
 };
 
 //=============================================================================
@@ -1008,4 +1059,31 @@ function initializeApp() {
     "Click the sync button in the menu to load your tasks.",
     8000,
   );
+
+  // Load initial tasks with animation
+  const initialTasks = window.initialTasks || []; // This will be passed from Flask
+  if (initialTasks.length > 0) {
+    TaskManager.updateTaskList(initialTasks, DOM.get("taskList"));
+  }
+
+  // Animate initial tasks
+  const taskElements = document.querySelectorAll("#task-list .task-item");
+  if (taskElements.length > 0) {
+    taskElements.forEach((task, index) => {
+      setTimeout(() => {
+        task.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+        task.style.opacity = "1";
+        task.style.transform = "translateY(0)";
+
+        task.addEventListener(
+          "transitionend",
+          () => {
+            task.style.transition = "";
+            task.style.transform = "";
+          },
+          { once: true },
+        );
+      }, index * 50);
+    });
+  }
 }

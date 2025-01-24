@@ -195,12 +195,13 @@
           <li
             data-id="{{ task.id }}"
             data-quadrant="{{ task.quadrant }}"
-            class="task-item group relative flex w-full items-center justify-between rounded-lg border border-gray-100 p-2 transition-all duration-200 hover:translate-x-1 hover:border-gray-200 hover:shadow-sm{% if task.quadrant %} quadrant-{{ task.quadrant.lower() }}{% endif %}"
+            class="task-item group relative flex w-full items-center justify-between rounded-lg border bg-white/95 p-3 shadow-sm backdrop-blur-sm hover:border-blue-100/50 hover:shadow-md"
+            style="opacity: 0; transform: translateY(15px);"
           >
             <div class="flex items-center flex-1">
               <input
                 type="checkbox"
-                class="task-checkbox mr-4 h-5 w-5 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                class="task-checkbox mr-4 h-5 w-5 cursor-pointer rounded border-gray-300 text-[#3d72fe] focus:ring-[#3d72fe]"
                 {% if task.completed %}checked{% endif %}
                 aria-label="Mark task as complete"
               />
@@ -251,37 +252,6 @@
                   Not Urgent & Important
                 </h3>
               </div>
-              <ul class="q2-tasks space-y-2"></ul>
-            </div>
-            
-            <!-- Q3: Urgent & Not Important -->
-            <div class="quadrant quadrant-q3">
-              <div class="mb-4 flex items-center justify-between">
-                <h3 class="flex items-center gap-2 font-medium text-[#f59e0b]">
-                  Urgent & Not Important
-                </h3>
-              </div>
-              <ul class="q3-tasks space-y-2"></ul>
-            </div>
-            
-            <!-- Q4: Not Urgent & Not Important -->
-            <div class="quadrant quadrant-q4">
-              <div class="mb-4 flex items-center justify-between">
-                <h3 class="flex items-center gap-2 font-medium text-[#71717a]">
-                  Not Urgent & Not Important
-                </h3>
-              </div>
-              <ul class="q4-tasks space-y-2"></ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <div id="notification-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
-
-    <div id="notification-container" class="hidden"></div>
-
-    <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+              <ul class="q2-tasks space-y-2"></ul>            </div>                        <!-- Q3: Urgent & Not Important -->            <div class="quadrant quadrant-q3">              <div class="mb-4 flex items-center justify-between">                <h3 class="flex items-center gap-2 font-medium text-[#f59e0b]">                  Urgent & Not Important                </h3>              </div>              <ul class="q3-tasks space-y-2"></ul>            </div>                        <!-- Q4: Not Urgent & Not Important -->            <div class="quadrant quadrant-q4">              <div class="mb-4 flex items-center justify-between">                <h3 class="flex items-center gap-2 font-medium text-[#71717a]">                  Not Urgent & Not Important                </h3>              </div>              <ul class="q4-tasks space-y-2"></ul>            </div>          </div>        </div>      </div>    </main>    <div id="notification-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>    <div id="notification-container" class="hidden"></div>    <!-- JavaScript -->    <script src="{{ url_for('static', filename='js/app.js') }}"></script>    <script>      window.initialTasks = {{ initial_tasks|tojson|safe }};
+    </script>
 </html>

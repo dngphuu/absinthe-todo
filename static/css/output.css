@@ -775,7 +775,7 @@ video {
   padding-bottom: 1rem;
 }
 
-/* Enhanced Task Items */
+/* Enhanced Task Items - Core Styles */
 
 .task-item {
   position: relative;
@@ -785,25 +785,59 @@ video {
   justify-content: space-between;
   border-radius: 0.75rem;
   border-width: 1px;
-  border-color: transparent;
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / 0.95);
   padding: 0.75rem;
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-  transition-property: all;
-  transition-duration: 200ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  --tw-backdrop-blur: blur(4px);
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Standardized Hover Effects */
+
 .task-item:hover {
-  --tw-translate-x: 0.25rem;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   border-color: rgb(219 234 254 / 0.5);
   --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  transform: translateY(-2px);
+}
+
+/* List View Specific Transitions */
+
+.view-list .task-item {
+  border-color: transparent;
+}
+
+/* Matrix View Specific Styles */
+
+.view-matrix .task-item {
+  background-color: rgb(255 255 255 / 0.8);
+}
+
+/* Quadrant-specific hover styles */
+
+.view-matrix .quadrant-q1 .task-item:hover {
+  border-color: rgb(254 202 202 / 0.8);
+  background-color: rgb(255 255 255 / 0.95);
+}
+
+.view-matrix .quadrant-q2 .task-item:hover {
+  border-color: rgb(61 114 254 / 0.3);
+  background-color: rgb(255 255 255 / 0.95);
+}
+
+.view-matrix .quadrant-q3 .task-item:hover {
+  border-color: rgb(253 230 138 / 0.8);
+  background-color: rgb(255 255 255 / 0.95);
+}
+
+.view-matrix .quadrant-q4 .task-item:hover {
+  border-color: rgb(229 231 235 / 0.8);
+  background-color: rgb(255 255 255 / 0.95);
 }
 
 .task-checkbox {
@@ -1397,6 +1431,27 @@ video {
     transform: translateX(20%) rotateY(35deg);
   }
 }
+
+/* Task Animation States */
+
+.task-enter {
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+.task-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Task Container Transitions */
+
+.task-container-fade {
+  transition: opacity 0.2s ease-out;
+}
+
+/* Task List Animations */
 
 .sr-only {
   position: absolute;
@@ -2108,12 +2163,6 @@ video {
 
 .transition-colors {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-.transition-opacity {
-  transition-property: opacity;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }

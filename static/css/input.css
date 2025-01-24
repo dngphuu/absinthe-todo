@@ -41,9 +41,44 @@
     @apply flex items-center justify-between px-6 py-4;
   }
 
-  /* Enhanced Task Items */
+  /* Enhanced Task Items - Core Styles */
   .task-item {
-    @apply relative flex w-full items-center justify-between rounded-xl border border-transparent bg-white p-3 shadow-sm transition-all duration-200 ease-in-out hover:translate-x-1 hover:border-blue-100/50 hover:shadow-md;
+    @apply relative flex w-full items-center justify-between rounded-xl border 
+           bg-white/95 p-3 shadow-sm backdrop-blur-sm;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Standardized Hover Effects */
+  .task-item:hover {
+    @apply border-blue-100/50 shadow-md;
+    transform: translateY(-2px);
+  }
+
+  /* List View Specific Transitions */
+  .view-list .task-item {
+    @apply border-transparent;
+  }
+
+  /* Matrix View Specific Styles */
+  .view-matrix .task-item {
+    @apply bg-white/80;
+  }
+
+  /* Quadrant-specific hover styles */
+  .view-matrix .quadrant-q1 .task-item:hover {
+    @apply border-red-200/80 bg-white/95;
+  }
+
+  .view-matrix .quadrant-q2 .task-item:hover {
+    @apply border-[#3d72fe]/30 bg-white/95;
+  }
+
+  .view-matrix .quadrant-q3 .task-item:hover {
+    @apply border-amber-200/80 bg-white/95;
+  }
+
+  .view-matrix .quadrant-q4 .task-item:hover {
+    @apply border-gray-200/80 bg-white/95;
   }
 
   .task-checkbox {
@@ -354,6 +389,46 @@
       opacity: 0;
       transform: translateX(20%) rotateY(35deg);
     }
+  }
+
+  /* Task Animation States */
+  .task-enter {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  .task-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .task-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .task-exit-active {
+    opacity: 0;
+    transform: translateY(-15px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Task Container Transitions */
+  .task-container-fade {
+    transition: opacity 0.2s ease-out;
+  }
+
+  /* Task List Animations */
+  .task-list-enter {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  .task-list-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
