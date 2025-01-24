@@ -96,7 +96,7 @@ const UserMenuController = {
   toggleLogoutMenu(show) {
     const userInfo = DOM.get("userInfo");
     const logoutMenu = DOM.get("logoutMenu");
-    
+
     if (!userInfo || !logoutMenu) return;
 
     if (show) {
@@ -268,15 +268,15 @@ const TaskManager = {
       {
         "data-id": task.id,
         "data-quadrant": task.quadrant,
-        class: `task-item group relative flex w-full items-center justify-between rounded-lg border border-gray-100 p-2 transition-all duration-200 hover:translate-x-1 hover:border-gray-200 hover:shadow-sm ${
-          task.quadrant ? `quadrant-${task.quadrant.toLowerCase()}` : ''
+        class: `task-item group relative flex w-full items-center justify-between rounded-lg border p-3 transition-all duration-200 ${
+          task.quadrant ? `quadrant-${task.quadrant.toLowerCase()}` : ""
         }`,
       },
       `
         <div class="flex items-center flex-1">
           <input
             type="checkbox"
-            class="task-checkbox mr-4 h-5 w-5 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            class="task-checkbox mr-4 h-5 w-5 cursor-pointer rounded border-gray-300 text-[#3d72fe] focus:ring-[#3d72fe]"
             ${task.completed ? "checked" : ""}
           />
           <input
@@ -284,11 +284,15 @@ const TaskManager = {
             value="${task.content}"
             class="task-content flex-1 bg-transparent px-1 outline-none transition-all duration-200 focus:bg-gray-50 rounded-md focus:px-2"
           />
-          ${task.quadrant ? `
+          ${
+            task.quadrant
+              ? `
             <span class="quadrant-indicator ml-2 hidden group-hover:inline-flex items-center text-sm text-gray-500">
               ${task.quadrant}
             </span>
-          ` : ''}
+          `
+              : ""
+          }
         </div>
         <div class="flex items-center space-x-1">
           <button
@@ -410,13 +414,22 @@ const TaskManager = {
 // MODULE: Sync Operations
 //=============================================================================
 const SyncManager = {
+  syncInProgress: false,
+
   async syncTasks(silent = false) {
-    if (LoadingState.isLoading) return;
+    if (LoadingState.isLoading || this.syncInProgress) return;
+    this.syncInProgress = true;
 
     const syncButton = DOM.get("sync-button");
     LoadingState.start(syncButton);
     syncButton.classList.add("syncing");
     
+    // Store reference to loading notification
+    const loadingNotification = NotificationManager.showLoading(
+      "Syncing tasks...",
+      "Please wait while we sync your tasks"
+    );
+
     try {
       const response = await fetch("/sync-tasks", {
         method: "POST",
@@ -425,7 +438,8 @@ const SyncManager = {
         },
       });
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
 
       if (data.status === "success" && Array.isArray(data.tasks)) {
@@ -435,26 +449,40 @@ const SyncManager = {
           const taskElement = TaskManager.createTaskElement(task);
           taskList.appendChild(taskElement);
         });
-        
+
         // Update last synced time
         const lastSyncedSpan = document.getElementById("last-synced");
         if (lastSyncedSpan) {
           const now = new Date();
           lastSyncedSpan.textContent = `${now.toLocaleTimeString()}`;
         }
-        
+
         // Update matrix view if active
         if (ViewManager.currentView === "matrix") {
           ViewManager.updateMatrixView();
         }
 
-        if (!silent) {
-          Utils.handleSuccess("Tasks synced successfully!");
+        // Remove loading notification before showing success
+        if (loadingNotification) {
+          loadingNotification.classList.add('removing');
+          await new Promise(resolve => {
+            loadingNotification.addEventListener('animationend', () => {
+              loadingNotification.remove();
+              resolve();
+            });
+          });
         }
+        
+        // Show success notification
+        NotificationManager.show("Tasks synced successfully!", "success");
       } else {
         throw new Error(data.message || "Sync failed");
       }
     } catch (error) {
+      // Remove loading notification before showing error
+      if (loadingNotification) {
+        loadingNotification.remove();
+      }
       if (!silent) {
         Utils.handleError(error, "Sync failed");
       }
@@ -462,6 +490,7 @@ const SyncManager = {
       await Utils.wait(300);
       LoadingState.stop(syncButton);
       syncButton.classList.remove("syncing");
+      this.syncInProgress = false;
       if (!silent) {
         UserMenuController.toggleLogoutMenu(false);
       }
@@ -494,44 +523,50 @@ const ViewManager = {
     const listView = DOM.get("task-list");
     const matrixView = DOM.get("matrix-view");
 
+    // Update matrix view before animation if switching to matrix
+    if (this.currentView === "list") {
+      this.updateMatrixView();
+    }
+
     // Toggle view type
     this.currentView = this.currentView === "list" ? "matrix" : "list";
-
-    // Update button to show next available view
     this.updateViewButton();
 
     // Add transition classes
     listView.classList.add("view-list");
     matrixView.classList.add("view-matrix");
 
-    // Animate transition with transform and opacity
+    // Animate transition
     if (this.currentView === "matrix") {
-      listView.style.transform = "translateY(-10px)";
-      listView.style.opacity = "0";
-      setTimeout(() => {
-        listView.classList.add("hidden");
-        matrixView.classList.remove("hidden");
-        // Reset transform before animating in
-        matrixView.style.transform = "translateY(10px)";
-        matrixView.style.opacity = "0";
-        // Force reflow
-        matrixView.offsetHeight;
-        // Animate in
-        matrixView.style.transform = "translateY(0)";
-        matrixView.style.opacity = "1";
-        this.updateMatrixView();
-      }, 300);
+      requestAnimationFrame(() => {
+        listView.style.transform = "translateY(-10px)";
+        listView.style.opacity = "0";
+        setTimeout(() => {
+          listView.classList.add("hidden");
+          matrixView.classList.remove("hidden");
+          matrixView.style.opacity = "0";
+          matrixView.style.transform = "translateY(10px)";
+
+          // Force reflow
+          matrixView.offsetHeight;
+
+          // Animate in
+          matrixView.style.transform = "translateY(0)";
+          matrixView.style.opacity = "1";
+        }, 300);
+      });
     } else {
       matrixView.style.transform = "translateY(-10px)";
       matrixView.style.opacity = "0";
       setTimeout(() => {
         matrixView.classList.add("hidden");
         listView.classList.remove("hidden");
-        // Reset transform before animating in
         listView.style.transform = "translateY(10px)";
         listView.style.opacity = "0";
+
         // Force reflow
         listView.offsetHeight;
+
         // Animate in
         listView.style.transform = "translateY(0)";
         listView.style.opacity = "1";
@@ -542,25 +577,22 @@ const ViewManager = {
   updateMatrixView() {
     const tasks = Array.from(DOM.get("task-list").children);
     const quadrants = document.querySelectorAll(".quadrant ul");
-    
-    // Clear existing tasks in matrix
-    quadrants.forEach(ul => ul.innerHTML = "");
-  
-    // Distribute tasks to quadrants with animations
+
+    quadrants.forEach((ul) => (ul.innerHTML = ""));
+
     tasks.forEach((task, index) => {
       const taskQuadrant = task.getAttribute("data-quadrant");
       if (!taskQuadrant) return;
-  
+
       const quadrant = taskQuadrant.toLowerCase();
       const quadrantList = document.querySelector(`.${quadrant}-tasks`);
       if (!quadrantList) return;
-  
+
       const clonedTask = task.cloneNode(true);
-      
-      // Clean up classes for matrix view
-      clonedTask.className = "task-item opacity-0";
+
+      // Simplified matrix task styling
+      clonedTask.className = "task-item opacity-0 group";
       clonedTask.classList.add(
-        "group",
         "relative",
         "flex",
         "w-full",
@@ -568,33 +600,60 @@ const ViewManager = {
         "justify-between",
         "rounded-lg",
         "border",
-        "p-3",
         "transition-all",
         "duration-200",
-        "hover:shadow-md"
+        `quadrant-${quadrant}`,
       );
-  
-      // Remove any existing indicators since they're now contextual
+
+      // Remove quadrant indicator and simplify content
       const indicator = clonedTask.querySelector(".quadrant-indicator");
       if (indicator) indicator.remove();
-  
-      // Re-attach event listeners to cloned task
-      // ...existing event listener code...
-  
+
+      // Add subtle completed state styling
+      const checkbox = clonedTask.querySelector(".task-checkbox");
+      const content = clonedTask.querySelector(".task-content");
+      if (checkbox && checkbox.checked) {
+        content.classList.add("line-through", "text-gray-400");
+      }
+
+      // Re-attach event listeners with modified behavior
+      if (checkbox) {
+        checkbox.addEventListener("change", () => {
+          const taskId = clonedTask.getAttribute("data-id");
+          const content = clonedTask.querySelector(".task-content");
+
+          if (checkbox.checked) {
+            content.classList.add("line-through", "text-gray-400");
+          } else {
+            content.classList.remove("line-through", "text-gray-400");
+          }
+
+          TaskManager.updateTask(taskId, content.value, checkbox.checked);
+        });
+      }
+
+      // ...rest of the event listener code...
+
       quadrantList.appendChild(clonedTask);
-  
-      // Animate task entrance with a slight delay
+
+      // Smoother entrance animation
       requestAnimationFrame(() => {
         setTimeout(() => {
           clonedTask.classList.remove("opacity-0");
-        }, index * 50);
+          clonedTask.classList.add(
+            "transform",
+            "transition-all",
+            "duration-300",
+            "ease-out",
+          );
+        }, index * 40);
       });
     });
   },
 
   init() {
     this.updateViewButton();
-  }
+  },
 };
 
 //=============================================================================
@@ -780,15 +839,16 @@ const EventHandlers = {
 // MODULE: Notification Manager
 //=============================================================================
 const NotificationManager = {
-  show(message, type = 'info') {
-    const container = document.getElementById('notification-container');
+  show(message, type = "info") {
+    const container = document.getElementById("notification-container");
     if (!container) return;
 
-    const iconSvg = type === 'success' 
-      ? '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
-      : '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+    const iconSvg =
+      type === "success"
+        ? '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
+        : '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
 
-    const notification = document.createElement('div');
+    const notification = document.createElement("div");
     notification.className = `notification ${type}`;
     notification.innerHTML = `
       <div class="notification-icon">
@@ -803,34 +863,36 @@ const NotificationManager = {
     `;
 
     const dismiss = () => {
-      notification.classList.add('removing');
-      notification.addEventListener('animationend', () => {
+      notification.classList.add("removing");
+      notification.addEventListener("animationend", () => {
         notification.remove();
         if (container.children.length === 0) {
-          container.classList.add('hidden');
+          container.classList.add("hidden");
         }
       });
     };
 
     // Clear existing notifications of the same type
     const existing = container.querySelectorAll(`.notification.${type}`);
-    existing.forEach(el => el.remove());
+    existing.forEach((el) => el.remove());
 
     // Show container if hidden
-    container.classList.remove('hidden');
+    container.classList.remove("hidden");
 
     // Add and animate notification
-    notification.style.opacity = '0';
+    notification.style.opacity = "0";
     container.appendChild(notification);
-    
+
     // Trigger reflow for smooth animation
     notification.offsetHeight;
-    notification.style.opacity = '1';
+    notification.style.opacity = "1";
 
     // Add event listeners
-    notification.querySelector('.notification-dismiss').addEventListener('click', dismiss);
+    notification
+      .querySelector(".notification-dismiss")
+      .addEventListener("click", dismiss);
     setTimeout(dismiss, 8000);
-    
+
     // Add hover pause functionality
     let dismissTimeout;
     const startDismissTimer = () => {
@@ -839,10 +901,80 @@ const NotificationManager = {
     const pauseDismissTimer = () => {
       clearTimeout(dismissTimeout);
     };
-    
-    notification.addEventListener('mouseenter', pauseDismissTimer);
-    notification.addEventListener('mouseleave', startDismissTimer);
-  }
+
+    notification.addEventListener("mouseenter", pauseDismissTimer);
+    notification.addEventListener("mouseleave", startDismissTimer);
+  },
+
+  showLoading(title, message) {
+    const container = document.getElementById("notification-container");
+    if (!container) return;
+
+    // Remove any existing loading notifications
+    const existing = container.querySelector(".notification.loading");
+    if (existing) existing.remove();
+
+    const notification = document.createElement("div");
+    notification.className = "notification loading";
+    notification.innerHTML = `
+      <div class="notification-icon loading">
+        <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <div class="font-medium text-sm">${title}</div>
+        <div class="text-xs text-gray-500">${message}</div>
+      </div>
+    `;
+
+    container.prepend(notification);
+    container.classList.remove("hidden");
+
+    return notification;
+  },
+
+  showWarning(title, message, duration = 5000) {
+    const container = document.getElementById("notification-container");
+    if (!container) return;
+
+    const notification = document.createElement("div");
+    notification.className = "notification warning";
+    notification.innerHTML = `
+      <div class="notification-icon">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        </svg>
+      </div>
+      <div class="flex-1">
+        <div class="font-medium text-sm">${title}</div>
+        <div class="text-xs text-amber-700/80">${message}</div>
+      </div>
+    `;
+
+    // Remove any existing warning notifications
+    const existing = container.querySelector(".notification.warning");
+    if (existing) existing.remove();
+
+    container.prepend(notification);
+    container.classList.remove("hidden");
+
+    // Auto dismiss after duration
+    setTimeout(() => {
+      notification.classList.add("removing");
+      notification.addEventListener("animationend", () => {
+        notification.remove();
+        if (container.children.length === 0) {
+          container.classList.add("hidden");
+        }
+      });
+    }, duration);
+
+    return notification;
+  },
 };
 
 //=============================================================================
@@ -856,7 +988,11 @@ function initializeApp() {
   EventHandlers.init();
   TaskManager.init();
   ViewManager.init();
-  
-  // Auto-sync on page load
-  SyncManager.syncTasks(true);
+
+  // Show guidance to user about syncing
+  NotificationManager.showWarning(
+    "Welcome back!",
+    "Click the sync button in the menu to load your tasks.",
+    8000,
+  );
 }
