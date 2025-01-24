@@ -36,3 +36,6 @@ class Config:
     
     # Logging
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+    
+    # OpenAI Configuration
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')

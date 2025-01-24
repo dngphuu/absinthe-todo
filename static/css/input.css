@@ -1,3 +1,111 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /* Task Input Form */
+  .task-input-container {
+    @apply relative mx-4 my-4 rounded-xl bg-gray-50/30 p-3 shadow-sm transition-all duration-300 focus-within:bg-white focus-within:shadow-md;
+  }
+
+  .task-input {
+    @apply w-full rounded-lg bg-transparent px-4 py-2 text-gray-700 outline-none transition-all duration-300 placeholder:text-gray-400 
+    focus:ring-2 focus:ring-blue-100 dark:text-gray-300;
+  }
+
+  .task-submit-btn {
+    @apply absolute right-5 top-1/2 -translate-y-1/2 transform rounded-lg p-2
+    text-gray-400 transition-all duration-300 hover:text-blue-500 focus:outline-none;
+  }
+
+  /* Task Section Dividers */
+  .section-header {
+    @apply flex items-center justify-between px-6 py-4;
+  }
+
+  /* Enhanced Task Items */
+  .task-item {
+    @apply relative flex w-full items-center justify-between rounded-xl border border-transparent 
+           bg-white/60 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 
+           hover:translate-x-1 hover:border-blue-100/50 hover:shadow-md;
+  }
+
+  .task-checkbox {
+    @apply mr-4 h-5 w-5 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500;
+  }
+
+  .task-content {
+    @apply flex-1 rounded-md bg-transparent px-1 outline-none transition-all duration-200 focus:bg-gray-50 focus:px-2;
+  }
+
+  .task-delete {
+    @apply p-2 text-gray-400 transition-all duration-300 hover:rounded-full hover:bg-red-50 hover:text-red-500;
+  }
+
+  /* Quadrant Themes */
+  .quadrant {
+    @apply rounded-lg p-4;
+  }
+
+  .quadrant-q1 {
+    @apply border border-[#dc2626]/20 bg-red-50/50;
+  }
+
+  .quadrant-q2 {
+    @apply border border-[#2563eb]/20 bg-blue-50/50;
+  }
+
+  .quadrant-q3 {
+    @apply border border-[#f59e0b]/20 bg-amber-50/50;
+  }
+
+  .quadrant-q4 {
+    @apply border border-[#71717a]/20 bg-gray-50/50;
+  }
+
+  /* Quadrant Indicators */
+  .quadrant-indicator {
+    @apply ml-2 hidden items-center text-sm group-hover:inline-flex;
+  }
+
+  .quadrant-indicator-q1 {
+    @apply rounded-full bg-red-100/50 px-2 py-1 text-xs text-[#dc2626];
+  }
+
+  .quadrant-indicator-q2 {
+    @apply rounded-full bg-blue-100/50 px-2 py-1 text-xs text-[#2563eb];
+  }
+
+  .quadrant-indicator-q3 {
+    @apply rounded-full bg-amber-100/50 px-2 py-1 text-xs text-[#f59e0b];
+  }
+
+  .quadrant-indicator-q4 {
+    @apply rounded-full bg-gray-100/50 px-2 py-1 text-xs text-[#71717a];
+  }
+
+  /* View Transitions */
+  .view-transition {
+    @apply transition-opacity duration-300 ease-in-out;
+  }
+}
+
+/* Styles that can't be handled by Tailwind */
+@layer utilities {
+  .quadrant-emoji::before {
+    @apply absolute right-2 opacity-50;
+  }
+
+  .quadrant-q1::before {
+    content: "⚡";
+  }
+  .quadrant-q2::before {
+    content: "🎯";
+  }
+  .quadrant-q3::before {
+    content: "⏳";
+  }
+  .quadrant-q4::before {
+    content: "➖";
+  }
+}

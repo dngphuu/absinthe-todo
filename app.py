@@ -6,6 +6,7 @@ from functools import wraps
 from config import Config
 from task_manager import TaskManager
 from google_auth import GoogleAuth
+from magic_sort import MagicSort
 import os
 from typing import Callable
 
@@ -24,6 +25,7 @@ app.secret_key = Config.SECRET_KEY
 # Initialize services with config
 task_manager = TaskManager()
 google_auth = GoogleAuth(Config.GOOGLE_CLIENT_ID, Config.GOOGLE_CLIENT_SECRET)
+magic_sorter = MagicSort()
 
 #=============================================================================
 # AUTHENTICATION & SECURITY
@@ -206,6 +208,35 @@ def sync_tasks():
     except Exception as e:
         app.logger.error(f"Task sync failed: {str(e)}")
         return jsonify({"status": "error", "message": str(e)})
+
+#=============================================================================
+# MAGIC SORT ROUTES
+#=============================================================================
+@app.route("/magic-sort", methods=["POST"])
+@login_required
+def magic_sort():
+    """Sort tasks using Eisenhower Matrix"""
+    try:
+        result = magic_sorter.process_tasks()
+        if result and result.get('tasks'):
+            # Update task manager with sorted tasks
+            task_manager.tasks = result['tasks']
+            task_manager.save_tasks()
+            return jsonify({
+                "status": "success",
+                "message": "Tasks sorted successfully",
+                "tasks": result['tasks']
+            })
+        return jsonify({
+            "status": "error",
+            "message": "No tasks to sort"
+        })
+    except Exception as e:
+        app.logger.error(f"Magic sort failed: {str(e)}")
+        return jsonify({
+            "status": "error", 
+            "message": str(e)
+        })
 
 if __name__ == "__main__":
     app.run(

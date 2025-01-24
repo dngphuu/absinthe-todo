@@ -105,99 +105,146 @@
       class="mx-auto mt-24 max-w-3xl rounded-md border bg-white font-rubik shadow-xl"
     >
       <!-- Task Input Form -->
-      <form id="add-task-form" class="relative">
-        <!-- Add loading overlay -->
-        <div
-          id="form-loading"
-          class="absolute inset-0 hidden bg-white/50 backdrop-blur-sm"
-        >
-          <!-- Loading spinner -->
-        </div>
-        <div
-          class="relative mx-4 my-1 flex justify-around after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:bg-gray-300 after:transition-all after:duration-300 after:ease-in-out focus-within:after:bg-black"
-          id="add-task-container"
-        >
+      <div class="task-input-container">
+        <form id="add-task-form" class="relative">
           <input
             type="text"
-            placeholder="Type here to add new task..."
-            class="mr-2 w-full outline-none"
+            placeholder="✨ Add a new task..."
+            class="task-input"
             id="task-input"
           />
           <button
             type="submit"
             title="Add task"
             id="add-task-btn"
-            class="p-3 transition-all duration-500 ease-in-out hover:rounded-full hover:bg-gray-100"
+            class="task-submit-btn"
           >
-            <svg
-              class="text-white-800 h-6 w-6 transition-all duration-300 ease-in-out"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="#bdbdbd"
-              viewBox="0 0 24 24"
-              id="add-task-icon"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M3 4a1 1 0 0 0-.822 1.57L6.632 12l-4.454 6.43A1 1 0 0 0 3 20h13.153a1 1 0 0 0 .822-.43l4.847-7a1 1 0 0 0 0-1.14l-4.847-7a1 1 0 0 0-.822-.43H3Z"
-                clip-rule="evenodd"
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path 
+                d="M12 5l7 7-7 7M5 12h14" 
+                stroke-width="2" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"
               />
             </svg>
           </button>
+        </form>
+      </div>
+
+      <!-- Task Actions Menu -->
+      <section class="section-header">
+        <div class="flex items-center space-x-4">
+          <!-- Utilities Menu -->
+          <div class="flex items-center space-x-2">
+            <button
+              id="magic-sort-button"
+              class="flex items-center space-x-2 rounded-md bg-[#3d72fe] px-3 py-1.5 text-white transition-all duration-300 hover:bg-blue-600 hover:shadow-md active:scale-95 disabled:opacity-50"
+            >
+              <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+              </svg>
+              <span class="text-xs">Magic Sort</span>
+            </button>
+
+            <button
+              id="view-toggle-button"
+              disabled
+              class="flex items-center space-x-2 rounded-md bg-gray-100 px-3 py-1.5 text-gray-400 transition-all duration-300 hover:bg-gray-200 active:scale-95 disabled:cursor-not-allowed disabled:hover:bg-gray-100"
+            >
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+              </svg>
+              <span class="text-xs">View</span>
+            </button>
+          </div>
         </div>
-      </form>
+      </section>
 
       <!-- Task List Container -->
-      <div class="mx-6 mb-3 mt-1">
-        <ul id="task-list" role="list" aria-label="Task list">
+      <div id="task-container" class="mx-6 mb-3 mt-1">
+        <!-- List View (default) -->
+        <ul id="task-list" role="list" aria-label="Task list" class="view-list space-y-2">
           {% for task in tasks %}
           <li
             data-id="{{ task.id }}"
-            class="task-item group relative flex w-full items-center justify-between py-1"
+            class="task-item group relative flex w-full items-center justify-between rounded-lg border border-gray-100 p-2 transition-all duration-200 hover:translate-x-1 hover:border-gray-200 hover:shadow-sm"
           >
-            <input
-              type="checkbox"
-              class="task-checkbox mr-4 h-5 w-5 cursor-pointer"
-              {%
-              if
-              task.completed
-              %}
-              checked
-              {%
-              endif
-              %}
-            />
-            <input
-              type="text"
-              value="{{ task.content }}"
-              class="task-content flex-1 px-1 outline-none"
-            />
-            <button
-              class="task-delete p-2 transition-all duration-500 ease-in-out hover:rounded-full hover:bg-gray-100"
-              title="Delete task"
-              type="button"
-            >
-              <svg
-                class="text-black-800 h-[24px] w-[24px]"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="#de5246"
-                viewBox="0 0 24 24"
+            <div class="flex items-center flex-1">
+              <input
+                type="checkbox"
+                class="task-checkbox mr-4 h-5 w-5 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                {% if task.completed %}checked{% endif %}
+              />
+              <input
+                type="text"
+                value="{{ task.content }}"
+                class="task-content flex-1 bg-transparent px-1 outline-none transition-all duration-200 focus:bg-gray-50 rounded-md focus:px-2"
+              />
+              <span class="quadrant-indicator ml-2 hidden group-hover:inline-flex items-center text-sm"></span>
+            </div>
+            <div class="flex items-center space-x-1">
+              <button
+                class="task-delete p-2 text-gray-400 transition-all duration-300 hover:text-red-500 hover:rounded-full hover:bg-red-50"
+                title="Delete task"
+                type="button"
               >
-                <path
-                  fill-rule="evenodd"
-                  d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </button>
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           </li>
           {% endfor %}
         </ul>
+
+        <!-- Matrix View (hidden by default) -->
+        <div id="matrix-view" class="view-matrix hidden">
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Q1: Urgent & Important -->
+            <div class="quadrant quadrant-q1">
+              <h3 class="mb-4 flex items-center gap-2 font-medium text-[#dc2626]">
+                <span class="quadrant-indicator quadrant-indicator-q1">
+                  <span class="mr-2 text-lg">⚡</span>
+                  Urgent & Important
+                </span>
+              </h3>
+              <ul class="q1-tasks space-y-2"></ul>
+            </div>
+            
+            <!-- Q2: Not Urgent & Important -->
+            <div class="quadrant quadrant-q2">
+              <h3 class="mb-4 flex items-center gap-2 font-medium text-[#2563eb]">
+                <span class="quadrant-indicator quadrant-indicator-q2">
+                  <span class="mr-2 text-lg">🎯</span>
+                  Not Urgent & Important
+                </span>
+              </h3>
+              <ul class="q2-tasks space-y-2"></ul>
+            </div>
+            
+            <!-- Q3: Urgent & Not Important -->
+            <div class="quadrant quadrant-q3">
+              <h3 class="mb-4 flex items-center gap-2 font-medium text-[#f59e0b]">
+                <span class="quadrant-indicator quadrant-indicator-q3">
+                  <span class="mr-2 text-lg">⏳</span>
+                  Urgent & Not Important
+                </span>
+              </h3>
+              <ul class="q3-tasks space-y-2"></ul>
+            </div>
+            
+            <!-- Q4: Not Urgent & Not Important -->
+            <div class="quadrant quadrant-q4">
+              <h3 class="mb-4 flex items-center gap-2 font-medium text-[#71717a]">
+                <span class="quadrant-indicator quadrant-indicator-q4">
+                  <span class="mr-2 text-lg">➖</span>
+                  Not Urgent & Not Important
+                </span>
+              </h3>
+              <ul class="q4-tasks space-y-2"></ul>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -227,8 +274,7 @@
       </svg>
       <span class="font-rubik text-sm text-white">Sync tasks</span>
     </a>
-  </body>
 
-  <!-- JavaScript -->
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </html>

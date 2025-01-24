@@ -83,7 +83,11 @@ class TaskManager:
             'content': content.strip(),
             'completed': False,
             'created_at': datetime.now().isoformat(),
-            'updated_at': datetime.now().isoformat()
+            'updated_at': datetime.now().isoformat(),
+            # Add default Eisenhower Matrix fields
+            'urgency': 3,
+            'importance': 3,
+            'quadrant': 'Q4'
         }
         self.tasks.append(task)
         self.save_tasks()

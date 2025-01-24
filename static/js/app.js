@@ -246,30 +246,34 @@ const TaskManager = {
       "li",
       {
         "data-id": task.id,
-        class:
-          "task-item group relative flex w-full items-center justify-between py-1",
+        class: "task-item group relative flex w-full items-center justify-between rounded-lg border border-gray-100 bg-white p-2 transition-all duration-200 hover:border-gray-200 hover:shadow-sm"
       },
       `
-            <input
-                type="checkbox"
-                class="task-checkbox mr-4 h-5 w-5 cursor-pointer"
-                ${task.completed ? "checked" : ""}
-            />
-            <input
-                type="text"
-                value="${task.content}"
-                class="task-content flex-1 outline-none px-1"
-            />
-            <button
-                class="task-delete p-2 transition-all duration-500 ease-in-out hover:rounded-full hover:bg-gray-100"
-                title="Delete task"
-                type="button"
-            >
-                <svg class="text-black-800 h-[24px] w-[24px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#de5246" viewBox="0 0 24 24">
-                    <path fill-rule="evenodd" d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z" clip-rule="evenodd"/>
-                </svg>
-            </button>
-        `,
+        <div class="flex items-center flex-1">
+          <input
+            type="checkbox"
+            class="task-checkbox mr-4 h-5 w-5 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            ${task.completed ? "checked" : ""}
+          />
+          <input
+            type="text"
+            value="${task.content}"
+            class="task-content flex-1 bg-transparent px-1 outline-none transition-all duration-200 focus:bg-gray-50 rounded-md focus:px-2"
+          />
+          <span class="quadrant-indicator ml-2 hidden group-hover:inline-flex items-center text-sm"></span>
+        </div>
+        <div class="flex items-center space-x-1">
+          <button
+            class="task-delete p-2 text-gray-400 transition-all duration-300 hover:text-red-500 hover:rounded-full hover:bg-red-50"
+            title="Delete task"
+            type="button"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      `
     );
   },
 
@@ -287,6 +291,41 @@ const TaskManager = {
     const addTaskContainer = document.getElementById("add-task-container");
     addTaskContainer.classList.remove("after:bg-black"); // Reset line color
   },
+
+  handleTaskInputFocus() {
+    const inputContainer = document.querySelector('.task-input-container');
+    const input = document.querySelector('.task-input');
+    
+    // Add floating animation
+    input.addEventListener('focus', () => {
+      inputContainer.style.transform = 'translateY(-4px)';
+      inputContainer.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+    });
+
+    input.addEventListener('blur', () => {
+      inputContainer.style.transform = 'translateY(0)';
+      inputContainer.style.boxShadow = '';
+    });
+
+    // Add ripple effect on button click
+    const submitBtn = document.querySelector('.task-submit-btn');
+    submitBtn.addEventListener('click', (e) => {
+      const ripple = document.createElement('div');
+      ripple.classList.add('ripple');
+      submitBtn.appendChild(ripple);
+      
+      const rect = submitBtn.getBoundingClientRect();
+      ripple.style.left = `${e.clientX - rect.left}px`;
+      ripple.style.top = `${e.clientY - rect.top}px`;
+      
+      setTimeout(() => ripple.remove(), 600);
+    });
+  },
+
+  init() {
+    this.handleTaskInputFocus();
+    // ...existing init code...
+  }
 };
 
 //=============================================================================
@@ -372,6 +411,168 @@ const SyncManager = {
 };
 
 //=============================================================================
+// MODULE: View Manager
+//=============================================================================
+const ViewManager = {
+  currentView: 'list', // 'list' or 'matrix'
+  isTasksSorted: false,
+
+  toggleView() {
+    if (!this.isTasksSorted) return;
+    
+    const listView = DOM.get('task-list');
+    const matrixView = DOM.get('matrix-view');
+    const viewButton = DOM.get('view-toggle-button');
+    
+    // Toggle view type
+    this.currentView = this.currentView === 'list' ? 'matrix' : 'list';
+    
+    // Update button icon
+    viewButton.innerHTML = this.currentView === 'list' 
+      ? `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+         </svg>
+         <span class="text-xs">View</span>`
+      : `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h16v16H4V4z M4 12h16 M12 4v16"/>
+         </svg>
+         <span class="text-xs">View</span>`;
+
+    // Animate transition
+    if (this.currentView === 'matrix') {
+      listView.style.opacity = '0';
+      setTimeout(() => {
+        listView.classList.add('hidden');
+        matrixView.classList.remove('hidden');
+        setTimeout(() => {
+          matrixView.style.opacity = '1';
+          this.updateMatrixView();
+        }, 50);
+      }, 300);
+    } else {
+      matrixView.style.opacity = '0';
+      setTimeout(() => {
+        matrixView.classList.add('hidden');
+        listView.classList.remove('hidden');
+        setTimeout(() => {
+          listView.style.opacity = '1';
+        }, 50);
+      }, 300);
+    }
+  },
+
+  updateMatrixView() {
+    const tasks = Array.from(DOM.get('task-list').children);
+    
+    // Clear existing tasks in matrix
+    document.querySelectorAll('.quadrant ul').forEach(ul => ul.innerHTML = '');
+    
+    // Distribute tasks to quadrants with animations
+    tasks.forEach((task, index) => {
+      const quadrant = task.classList.contains('quadrant-q1') ? 'q1' :
+                      task.classList.contains('quadrant-q2') ? 'q2' :
+                      task.classList.contains('quadrant-q3') ? 'q3' : 'q4';
+      
+      const quadrantList = document.querySelector(`.${quadrant}-tasks`);
+      if (quadrantList) {
+        const clonedTask = task.cloneNode(true);
+        // Add matrix-specific styles
+        clonedTask.classList.add('opacity-0', 'translate-x-2');
+        clonedTask.classList.add('transition-all', 'duration-300', 'ease-in-out');
+        quadrantList.appendChild(clonedTask);
+        
+        // Animate task entrance
+        setTimeout(() => {
+          clonedTask.classList.remove('opacity-0', 'translate-x-2');
+        }, index * 50);
+      }
+    });
+  },
+
+  enableViewToggle() {
+    this.isTasksSorted = true;
+    const viewButton = DOM.get('view-toggle-button');
+    viewButton.disabled = false;
+    viewButton.classList.remove('text-gray-400', 'bg-gray-100');
+    viewButton.classList.add('text-gray-700', 'bg-white', 'border', 'border-gray-200');
+  }
+};
+
+//=============================================================================
+// MODULE: Magic Sort Operations
+//=============================================================================
+const MagicSortManager = {
+  updateTaskCount() {
+    const count = document.querySelectorAll('.task-item').length;
+    document.getElementById('task-count').textContent = count;
+  },
+
+  async sortTasks() {
+    if (LoadingState.isLoading) return;
+
+    const button = DOM.get('magic-sort-button');
+    try {
+      LoadingState.start(button);
+      
+      // Add rotation animation to button
+      button.classList.add('animate-spin');
+
+      const response = await fetch("/magic-sort", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.status === "success") {
+        // Fade out current tasks
+        const taskList = DOM.get("taskList");
+        taskList.style.opacity = '0';
+        await new Promise(r => setTimeout(r, 300)); // Wait for fade
+
+        // Update task list with sorted tasks
+        DOM.get("taskList").innerHTML = "";
+        data.tasks.forEach((task) => {
+          const taskElement = TaskManager.createTaskElement(task);
+          // Add quadrant indicator with animation
+          taskElement.classList.add(`quadrant-${task.quadrant.toLowerCase()}`);
+          taskElement.style.opacity = '0';
+          taskElement.style.transform = 'translateX(-10px)';
+          DOM.get("taskList").appendChild(taskElement);
+        });
+
+        // Fade in new tasks sequentially
+        const tasks = taskList.children;
+        await new Promise(r => setTimeout(r, 100));
+        taskList.style.opacity = '1';
+        
+        for (let i = 0; i < tasks.length; i++) {
+          const task = tasks[i];
+          task.style.transition = 'all 300ms ease-in-out';
+          task.style.opacity = '1';
+          task.style.transform = 'translateX(0)';
+          await new Promise(r => setTimeout(r, 50));
+        }
+
+        // Enable view toggle after successful sort
+        ViewManager.enableViewToggle();
+      } else {
+        throw new Error(data.message || "Sort failed");
+      }
+    } catch (error) {
+      console.error("Error sorting tasks:", error);
+      alert(`Sort failed: ${error.message}`);
+    } finally {
+      button.classList.remove('animate-spin');
+      LoadingState.stop(button);
+      this.updateTaskCount();
+    }
+  },
+};
+
+//=============================================================================
 // MODULE: Event Handlers
 //=============================================================================
 const EventHandlers = {
@@ -449,6 +650,34 @@ const EventHandlers = {
         await SyncManager.syncTasks();
       });
     }
+
+    // Add magic sort button handler
+    if (DOM.get("magic-sort-button")) {
+      DOM.get("magic-sort-button").addEventListener("click", async (e) => {
+        e.preventDefault();
+        await MagicSortManager.sortTasks();
+      });
+    }
+
+    // Add view toggle button handler
+    if (DOM.get('view-toggle-button')) {
+      DOM.get('view-toggle-button').addEventListener('click', () => {
+        ViewManager.toggleView();
+      });
+    }
+
+    // Update task count on load
+    MagicSortManager.updateTaskCount();
+
+    // Add task count update on task changes
+    const taskObserver = new MutationObserver(() => {
+      MagicSortManager.updateTaskCount();
+    });
+
+    taskObserver.observe(DOM.get('taskList'), {
+      childList: true,
+      subtree: true
+    });
   },
 };
 
@@ -461,4 +690,5 @@ document.addEventListener("DOMContentLoaded", initializeApp);
 function initializeApp() {
   UserMenuController.init();
   EventHandlers.init();
+  TaskManager.init();
 }

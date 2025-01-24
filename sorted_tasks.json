@@ -2,7 +2,7 @@
   "tasks": [
     {
       "id": "ef66b6cb-c74d-4cb8-ac2e-c214eb7bbaf6",
-      "content": "L\u00e0m b\u00e0i t\u1eadp",
+      "content": "Làm bài tập",
       "completed": false,
       "created_at": "2025-01-24T11:09:58.174761",
       "updated_at": "2025-01-24T11:09:58.174769",
@@ -12,7 +12,7 @@
     },
     {
       "id": "8f58e210-786e-40c0-9290-fc5dd959a289",
-      "content": "D\u1ecdn d\u1eb9p nh\u00e0",
+      "content": "Dọn dẹp nhà",
       "completed": false,
       "created_at": "2025-01-24T11:10:16.097821",
       "updated_at": "2025-01-24T11:10:16.097827",
@@ -22,7 +22,7 @@
     },
     {
       "id": "eac15690-a7bc-4c4d-b16a-5bc29fcb2405",
-      "content": "\u0110i ch\u01a1i",
+      "content": "Đi chơi",
       "completed": false,
       "created_at": "2025-01-24T11:10:47.860260",
       "updated_at": "2025-01-24T11:10:47.860273",
@@ -31,5 +31,5 @@
       "quadrant": "Q4"
     }
   ],
-  "last_sync": "2025-01-24T11:15:10.477726"
+  "last_sync": "2025-01-24T11:10:50.120398"
 }
