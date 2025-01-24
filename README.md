@@ -1,15 +1,23 @@
-# Todo App with Google Drive Sync
+# Absinthe Todo App
 
-A modern todo application built with Flask and JavaScript that helps you manage tasks with Google Drive synchronization.
+Absinthe Todo App revolutionizes task management with seamless Google Drive synchronization and an intuitive user interface inspired by [jrgarciadev/nextjs-todo-list](https://github.com/jrgarciadev/nextjs-todo-list). Our standout **Magic Sort** feature empowers users to effortlessly organize their tasks, enhancing productivity and workflow efficiency.
 
 ## Key Features
 
-- 🔐 Secure Google account authentication
-- ✨ Clean and modern interface
-- 📱 Fully responsive design
-- ⌨️ Keyboard accessibility
 - 🔄 Real-time Google Drive sync
-- 🎯 Instant task updates
+- 🎩 **Magic Sort** for easy task organization
+- ✨ Clean and modern interface
+- 🔐 Secure Google account authentication
+
+## Team Members
+
+Our team, **Absinthe**, consists of:
+
+- **Dang Gia Phu** (me)
+- **Truong Duy Dat**
+- **Nguyen Manh Duong**
+- **Nguyen Dinh Khang**
+- **Le Huu Tuan Dung**
 
 ## Tech Stack
 
@@ -201,7 +209,7 @@ npm install
 npm run watch
 
 # In a separate terminal, run the Flask app
-FLASK_ENV=development python app.py
+python app.py
 ```
 
 ### API Documentation
