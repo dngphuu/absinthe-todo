@@ -196,14 +196,24 @@ def sync_tasks():
         # Upload current state to cloud
         file_id = google_auth.upload_to_drive(credentials, task_manager.tasks_file)
         
-        # Get final task list
+        # Get final task list with proper formatting
         current_tasks = task_manager.load_tasks()
+        
+        # Ensure each task has required fields
+        formatted_tasks = [{
+            'id': task.get('id'),
+            'content': task.get('content'),
+            'completed': task.get('completed', False),
+            'quadrant': task.get('quadrant'),
+            'created_at': task.get('created_at'),
+            'updated_at': task.get('updated_at')
+        } for task in current_tasks]
         
         return jsonify({
             "status": "success",
             "message": "Tasks synced successfully",
             "fileId": file_id,
-            "tasks": current_tasks
+            "tasks": formatted_tasks
         })
     except Exception as e:
         app.logger.error(f"Task sync failed: {str(e)}")

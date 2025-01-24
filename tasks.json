@@ -1,45 +1,75 @@
 {
   "tasks": [
     {
-      "id": "c38cbee7-86d8-47d6-a197-dfb44441b70b",
-      "content": "Study",
+      "id": "69784ef3-8df2-457d-87bc-cbf5cbe2c1e6",
+      "content": "Health care",
       "completed": false,
-      "created_at": "2025-01-24T14:19:49.585699",
-      "updated_at": "2025-01-24T14:19:49.585712",
-      "urgency": 3,
-      "importance": 3,
-      "quadrant": "Q4"
+      "created_at": "2025-01-25T00:17:09.932729",
+      "updated_at": "2025-01-25T00:17:09.932735",
+      "quadrant": "Q1",
+      "urgency": 5,
+      "importance": 5
     },
     {
-      "id": "342e78fb-c49d-4eb5-a92e-83f64f85edb1",
-      "content": "Play volleyball",
+      "id": "f523d427-5ba9-4b19-adc6-830ae442e485",
+      "content": "Study for exam (upcoming in 2 weeks)",
       "completed": false,
-      "created_at": "2025-01-24T14:20:10.381367",
-      "updated_at": "2025-01-24T14:20:10.381373",
-      "urgency": 3,
-      "importance": 3,
-      "quadrant": "Q4"
+      "created_at": "2025-01-25T00:17:27.041993",
+      "updated_at": "2025-01-25T02:21:44.324859",
+      "quadrant": "Q2",
+      "urgency": 2,
+      "importance": 4
     },
     {
-      "id": "83a9368c-1dba-4b27-88f8-196ab2dd947a",
-      "content": "Watching TV",
+      "id": "6668c23e-394f-4db7-ae6e-36aa4fc9f729",
+      "content": "Go to the gym",
       "completed": false,
-      "created_at": "2025-01-24T14:20:16.129967",
-      "updated_at": "2025-01-24T14:20:16.129972",
+      "created_at": "2025-01-25T00:17:39.110809",
+      "updated_at": "2025-01-25T00:17:39.110815",
+      "quadrant": "Q4",
       "urgency": 3,
-      "importance": 3,
-      "quadrant": "Q4"
+      "importance": 3
     },
     {
-      "id": "b5cc2a5a-9168-4c5b-8e5b-4d73d68a8481",
-      "content": "Skiing",
+      "id": "825c77cc-1e52-4c4b-acb7-6e7ced59da38",
+      "content": "Cooking",
       "completed": false,
-      "created_at": "2025-01-24T14:20:30.113831",
-      "updated_at": "2025-01-24T14:20:30.113837",
+      "created_at": "2025-01-25T02:07:22.817237",
+      "updated_at": "2025-01-25T02:07:22.817245",
+      "quadrant": "Q4",
       "urgency": 3,
-      "importance": 3,
-      "quadrant": "Q4"
+      "importance": 3
+    },
+    {
+      "id": "4e7847ca-6cd2-4b05-aec9-635feb562a13",
+      "content": "Dating w/ gf",
+      "completed": false,
+      "created_at": "2025-01-25T00:17:04.980813",
+      "updated_at": "2025-01-25T00:17:04.980821",
+      "quadrant": "Q4",
+      "urgency": 1,
+      "importance": 3
+    },
+    {
+      "id": "5b757780-7db7-4d56-965c-c8928746170d",
+      "content": "Party w/ friends",
+      "completed": false,
+      "created_at": "2025-01-25T02:07:19.124966",
+      "updated_at": "2025-01-25T02:07:19.124974",
+      "quadrant": "Q4",
+      "urgency": 1,
+      "importance": 3
+    },
+    {
+      "id": "c990f46f-8821-44de-b9bf-c90f41a7f6c9",
+      "content": "Try hard Valorant to radiant",
+      "completed": false,
+      "created_at": "2025-01-25T01:11:13.570287",
+      "updated_at": "2025-01-25T01:11:13.570294",
+      "quadrant": "Q4",
+      "urgency": 1,
+      "importance": 2
     }
   ],
-  "last_sync": "2025-01-24T16:09:56.735642"
+  "last_sync": "2025-01-25T02:25:08.383185"
 }

@@ -66,17 +66,20 @@ class MagicSort:
     @staticmethod
     def determine_quadrant(urgency: int, importance: int) -> str:
         """Determine the quadrant based on urgency and importance levels"""
+        if urgency is None or importance is None:
+            return None
+            
         is_urgent = urgency >= TaskPriority.THRESHOLDS['urgency']
         is_important = importance >= TaskPriority.THRESHOLDS['importance']
         
         if is_urgent and is_important:
-            return Quadrant.Q1.code
+            return str(Quadrant.Q1.code)
         elif not is_urgent and is_important:
-            return Quadrant.Q2.code
+            return str(Quadrant.Q2.code)
         elif is_urgent and not is_important:
-            return Quadrant.Q3.code
+            return str(Quadrant.Q3.code)
         else:
-            return Quadrant.Q4.code
+            return str(Quadrant.Q4.code)
 
     def _construct_prompt(self, task_content: str) -> str:
         """Build the analysis prompt with detailed instructions"""
@@ -106,6 +109,9 @@ Task: "{task_content}"'''
 
     def categorize_task(self, task_content: str) -> Dict[str, Any]:
         """Analyze and categorize a task using OpenAI API"""
+        if not task_content or not task_content.strip():
+            return TaskPriority.DEFAULTS.copy()
+
         try:
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -117,16 +123,28 @@ Task: "{task_content}"'''
                 max_tokens=100
             )
             
-            result = json.loads(response.choices[0].message.content)
+            try:
+                result = json.loads(response.choices[0].message.content)
+            except json.JSONDecodeError:
+                self.logger.error("Invalid JSON response from API")
+                return TaskPriority.DEFAULTS.copy()
+
+            # Validate result structure
+            if not all(k in result for k in ['urgency', 'importance']):
+                self.logger.error("Missing required fields in API response")
+                return TaskPriority.DEFAULTS.copy()
+
+            # Ensure values are within valid ranges
+            result['urgency'] = max(1, min(5, int(result['urgency'])))
+            result['importance'] = max(1, min(5, int(result['importance'])))
             
-            # Validate and ensure quadrant matches urgency/importance values
-            calculated_quadrant = self.determine_quadrant(
-                result['urgency'], 
+            # Calculate quadrant based on validated values
+            result['quadrant'] = str(self.determine_quadrant(
+                result['urgency'],
                 result['importance']
-            )
-            result['quadrant'] = calculated_quadrant
+            ))
             
-            self.logger.info(f"Task categorized: {task_content[:50]}...")
+            self.logger.info(f"Task categorized successfully: {task_content[:50]}...")
             return result
             
         except Exception as e:
@@ -135,40 +153,36 @@ Task: "{task_content}"'''
 
     def _needs_categorization(self, task: Dict[str, Any]) -> bool:
         """Check if a task needs to be categorized"""
-        # Task needs categorization if it doesn't have the required fields
-        # or if they are set to default values
-        defaults = TaskPriority.DEFAULTS
         return (
             'urgency' not in task or
             'importance' not in task or
-            'quadrant' not in task or
-            (
-                task.get('urgency') == defaults['urgency'] and
-                task.get('importance') == defaults['importance'] and
-                task.get('quadrant') == defaults['quadrant']
-            )
+            'quadrant' not in task
         )
 
     def process_tasks(self) -> Optional[TaskData]:
         """Process and sort all tasks"""
         try:
-            # Read current tasks
             data = self._read_tasks()
             tasks = data.get('tasks', [])
             
-            # Process only uncategorized tasks
+            # Process each task while preserving original data
             processed_tasks = []
             categorized_count = 0
             for task in tasks:
-                if content := task.get('content'):
-                    if self._needs_categorization(task):
+                task_copy = task.copy()  # Work on a copy to avoid modifying original
+                if content := task_copy.get('content'):
+                    if self._needs_categorization(task_copy):
                         categorization = self.categorize_task(content)
-                        task.update(categorization)
+                        task_copy.update(categorization)
                         categorized_count += 1
-                    processed_tasks.append(task)
+                    # Recalculate quadrant based on urgency and importance
+                    elif 'urgency' in task_copy and 'importance' in task_copy:
+                        task_copy['quadrant'] = str(self.determine_quadrant(task_copy['urgency'], task_copy['importance']))
+                    processed_tasks.append(task_copy)
             
-            # Sort tasks and update file
+            # Sort tasks but don't add quadrant_class
             sorted_tasks = self._sort_tasks(processed_tasks)
+            
             output_data = {
                 'tasks': sorted_tasks,
                 'last_sync': data.get('last_sync') or datetime.now().isoformat()

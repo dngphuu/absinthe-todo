@@ -21,6 +21,27 @@ class TaskManager:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger('TaskManager')
 
+    def _prepare_task_for_response(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        """Prepare task data for frontend"""
+        task_copy = task.copy()
+        # Ensure all required fields are present
+        task_copy.setdefault('quadrant', '')
+        task_copy.setdefault('urgency', 0)
+        task_copy.setdefault('importance', 0)
+        
+        # Preserve existing quadrant if it exists
+        if 'quadrant' in task and task['quadrant']:
+            task_copy['quadrant'] = task['quadrant']
+            task_copy['quadrant_class'] = f"quadrant-{task['quadrant'].lower()}"
+            
+        return task_copy
+
+    def createTaskElement(self, task: Dict[str, Any]) -> str:
+        """Create task element with quadrant class if available"""
+        task_data = self._prepare_task_for_response(task)
+        quadrant_class = task_data.get('quadrant_class', '')
+        # Rest of the createTaskElement code...
+
     #=============================================================================
     # Storage Operations
     #=============================================================================
@@ -33,7 +54,7 @@ class TaskManager:
                     if not content:  # Handle empty file
                         self.logger.info("Tasks file is empty, initializing with defaults")
                         self.save_tasks()  # Create initial structure
-                        return self.tasks
+                        return []
                         
                     data = json.loads(content)
                     # Check if data is in the new format (dict with metadata)
@@ -48,7 +69,10 @@ class TaskManager:
                         self.save_tasks()
                     
                 self.logger.info(f"Loaded {len(self.tasks)} tasks")
-            return self.tasks
+                # Ensure each task has its quadrant data preserved
+                prepared_tasks = [self._prepare_task_for_response(task) for task in self.tasks]
+                return prepared_tasks
+            return []
         except Exception as e:
             self.logger.error(f"Error loading tasks: {str(e)}")
             return []
@@ -84,31 +108,34 @@ class TaskManager:
             'completed': False,
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat(),
-            # Add default Eisenhower Matrix fields
-            'urgency': 3,
-            'importance': 3,
-            'quadrant': 'Q4'
+            'quadrant': ""  # Initialize with empty quadrant for unsorted tasks
         }
         self.tasks.append(task)
         self.save_tasks()
         self.logger.info(f"Added task: {task['id']}")
-        return task
+        return self._prepare_task_for_response(task)
 
     def update_task(self, task_id: str, content: Optional[str] = None, 
                     completed: Optional[bool] = None) -> Optional[Dict]:
         """Update an existing task"""
-        for task in self.tasks:
-            if str(task['id']) == str(task_id):
-                if content is not None:
-                    task['content'] = content
-                if completed is not None:
-                    task['completed'] = completed
-                task['updated_at'] = datetime.now().isoformat()
-                self.save_tasks()
-                self.logger.info(f"Updated task: {task_id}")
-                return task
-        self.logger.warning(f"Task not found: {task_id}")
-        return None
+        try:
+            for task in self.tasks:
+                if str(task['id']) == str(task_id):
+                    if content is not None:
+                        if not content.strip():
+                            raise ValueError("Task content cannot be empty")
+                        task['content'] = content.strip()
+                    if completed is not None:
+                        task['completed'] = bool(completed)
+                    task['updated_at'] = datetime.now().isoformat()
+                    self.save_tasks()
+                    self.logger.info(f"Updated task: {task_id}")
+                    return self._prepare_task_for_response(task)
+            self.logger.warning(f"Task not found: {task_id}")
+            return None
+        except Exception as e:
+            self.logger.error(f"Error updating task: {str(e)}")
+            raise
 
     def delete_task(self, task_id: str) -> bool:
         """Delete a task by ID"""
