@@ -1,239 +1,159 @@
 # Absinthe Todo App
 
-Absinthe Todo App revolutionizes task management with seamless Google Drive synchronization and an intuitive user interface inspired by [jrgarciadev/nextjs-todo-list](https://github.com/jrgarciadev/nextjs-todo-list). Our standout **Magic Sort** feature empowers users to effortlessly organize their tasks, enhancing productivity and workflow efficiency.
+Absinthe Todo App revolutionizes task management with seamless Google Drive synchronization and an intuitive user interface. Our standout **Magic Sort** feature empowers users to effortlessly organize their tasks, enhancing productivity and workflow efficiency.
 
 ## Key Features
 
 - 🔄 Real-time Google Drive sync
-- 🎩 **Magic Sort** for easy task organization
+- 🎩 **Magic Sort** powered by AI
 - ✨ Clean and modern interface
-- 🔐 Secure Google account authentication
+- 🔐 Secure Google authentication
+- 📱 Responsive design
+- 🔍 Task filtering and search
 
-## Team Members
+## Quick Start Guide
 
-Our team, **Absinthe**, consists of:
+1. Download and install the app
+2. Set up Google OAuth credentials
+3. Configure environment variables
+4. Run the application
+5. Log in with Google account
 
-- **Dang Gia Phu** (me)
-- **Truong Duy Dat**
-- **Nguyen Manh Duong**
-- **Nguyen Dinh Khang**
-- **Le Huu Tuan Dung**
+Detailed instructions in the [Installation Guide](#installation-guide) section.
+
+## Prerequisites
+
+### Required Software
+
+- Python 3.8 or newer ([Download](https://www.python.org/downloads/))
+- Web browser (Chrome recommended)
+- Text editor (Notepad, VS Code, etc.)
+
+### Accounts Needed
+
+- Google Account ([Create one](https://accounts.google.com/signup))
+- Google Cloud Platform account ([Get started](https://console.cloud.google.com/))
+- OpenAI API key for Magic Sort ([Get key](https://platform.openai.com/api-keys))
+
+### Optional Development Tools
+
+- Node.js 16+ (for frontend development)
+- Git (for version control)
+
+## Installation Guide
+
+### 1. Download and Setup
+
+1. Get the project files:
+
+   - Download ZIP from [GitHub](https://github.com/dngphuu/absinthe-todo)
+   - Extract to desired location (e.g., Desktop)
+
+2. Install Python:
+   - Run Python installer
+   - ✅ Check "Add Python to PATH"
+   - Click "Install Now"
+
+### 2. Google Cloud Setup
+
+1. Create project in [Google Cloud Console](https://console.cloud.google.com)
+2. Enable Google Drive API
+3. Configure OAuth:
+   - Set up consent screen
+   - Create OAuth 2.0 credentials
+   - Add redirect URI: `http://localhost:8080/oauth2callback`
+   - Save Client ID and Secret
+
+### 3. Environment Setup
+
+1. Create environment file:
+
+   - Copy `.env.example` to `.env`
+   - Open `.env` in text editor
+
+2. Configure settings:
+
+```bash
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+SECRET_KEY=random-secret-key
+OPENAI_API_KEY=your-openai-key
+DEBUG=True
+PORT=8080
+```
+
+### 4. Installation Steps
+
+1. Create Python environment:
+
+   - Open project folder
+   - Shift + Right-click → "Open PowerShell here"
+   - Run:
+     ```bash
+     python -m venv venv
+     .\venv\Scripts\activate
+     pip install -r requirements.txt
+     ```
+
+2. Frontend setup (optional):
+   - Install Node.js
+   - Run in project folder:
+     ```bash
+     npm install
+     npm run build
+     ```
+
+### 5. Running the App
+
+1. Start the server:
+   ```bash
+   python app.py
+   ```
+2. Visit http://localhost:8080
+3. Log in with Google
+4. Start managing tasks!
+
+## API Documentation
+
+### Task Endpoints
+
+- GET `/` - View tasks
+- POST `/add-task` - Create task
+- POST `/update-task` - Update task
+- POST `/delete-task` - Delete task
+- POST `/sync-tasks` - Sync with Drive
+
+### Auth Endpoints
+
+- GET `/login` - Login page
+- GET `/google-login` - Start OAuth
+- GET `/oauth2callback` - OAuth callback
+- GET `/logout` - Logout
 
 ## Tech Stack
 
 - Backend: Python/Flask
 - Frontend: JavaScript, Tailwind CSS
-- Authentication: Google OAuth2
-- Storage: Google Drive API, local JSON
-- Cache: File-based caching
-- Logging: Python logging module
+- Auth: Google OAuth2
+- Storage: Google Drive API
+- Cache: File-based
+- Logging: Python logging
 
-## Prerequisites
+## Team
 
-Before starting, ensure you have:
+Project **Absinthe** by:
 
-- [Python 3.8+](https://www.python.org/downloads/) installed
-  - [Windows installation guide](https://docs.python.org/3/using/windows.html)
-  - [Linux/MacOS installation guide](https://docs.python.org/3/using/unix.html)
-- [Git](https://git-scm.com/downloads) installed
-  - [Git setup guide](https://github.com/git-guides/install-git)
-- [Google account](https://accounts.google.com/signup)
-- [Google Cloud Platform](https://console.cloud.google.com/) project
-  - [Getting started with GCP](https://cloud.google.com/gcp/getting-started)
+- Dang Gia Phu (me)
+- Truong Duy Dat
+- Nguyen Manh Duong
+- Nguyen Dinh Khang
+- Le Huu Tuan Dung
 
-### Development Prerequisites
+## Acknowledgments
 
-If you plan to modify the frontend styles (TailwindCSS):
-
-- [Node.js 16+](https://nodejs.org/en/download/)
-  - Used for TailwindCSS compilation and frontend development
-  - Required if you plan to modify frontend assets
-  - Download and install from the official website or use a version manager like nvm
-
-## Installation Guide
-
-### 1. Project Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/dngphuu/absinthe-todo.git
-
-# Navigate to project directory
-cd todo-app
-
-# Create a virtual environment
-python -m venv venv
-
-# Activate the virtual environment
-# For Windows (use one of these commands):
-venv\Scripts\activate     # Using Command Prompt
-.\venv\Scripts\activate  # Using PowerShell
-
-# For Linux/MacOS:
-source venv/bin/activate
-
-# Install required packages
-pip install -r requirements.txt
-
-# Install Node.js dependencies (for frontend development)
-npm install
-
-# Build frontend assets
-npm run build
-```
-
-💡 **Windows Command Tips:**
-
-- If you get "execution policy" errors in PowerShell, run:
-  ```powershell
-  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-  ```
-- Use backslashes (`\`) for file paths in Windows
-- Use `cd` to change directories, for example: `cd C:\Users\YourName\Desktop\todo-app`
-
-### 2. Google OAuth Configuration
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project or select existing one
-3. Enable the Google Drive API:
-   - Navigate to "APIs & Services" > "Library"
-   - Search for "Google Drive API"
-   - Click "Enable"
-4. Configure OAuth consent screen:
-   - Go to "APIs & Services" > "OAuth consent screen"
-   - Choose "External" user type
-   - Fill in required information (app name, user support email, developer contact)
-5. Create OAuth credentials:
-   - Go to "APIs & Services" > "Credentials"
-   - Click "Create Credentials" > "OAuth client ID"
-   - Select "Web application"
-   - Add authorized redirect URIs:
-     - http://localhost:8080/oauth2callback (for local use/development)
-   - Save and note down your Client ID and Client Secret
-
-### 3. Environment Configuration
-
-1. Create your environment file by copying the example file:
-
-```bash
-# For Windows Command Prompt:
-copy .env.example .env
-
-# For Windows PowerShell:
-Copy-Item .env.example .env
-
-# For Linux/MacOS:
-cp .env.example .env
-```
-
-💡 **File Copying Tips:**
-
-- Make sure you're in the project directory
-- In Windows Explorer, you can also manually copy and rename the file:
-  1. Right-click on `.env.example`
-  2. Select "Copy"
-  3. Right-click in the same folder
-  4. Select "Paste"
-  5. Rename the new file to `.env`
-
-2. Edit the .env file:
-
-- Open `.env` with any text editor (Notepad, VS Code, etc.)
-- If you can't see the file in Windows Explorer, enable "Show hidden files":
-  1. Open File Explorer
-  2. Click "View" at the top
-  3. Check "Hidden items" in the "Show/hide" section
-
-```bash
-# Required changes in .env:
-GOOGLE_CLIENT_ID=your-client-id-here
-GOOGLE_CLIENT_SECRET=your-client-secret-here
-SECRET_KEY=your-random-secret-key
-
-# Optional changes (defaults are usually fine):
-DEBUG=True
-PORT=8080
-```
-
-⚠️ IMPORTANT:
-
-- Never commit your .env file to version control
-- Make sure the file is named exactly `.env` (not `.env.txt`)
-- In Windows, if using Notepad, save with "All Files (_._)" and not as "Text Document"
-
-### 4. Running the Application
-
-```bash
-# Make sure your virtual environment is activated
-# Then start the application:
-python app.py
-
-# The app will be available at:
-# http://localhost:8080
-```
-
-💡 **Running Tips:**
-
-- If you close your terminal, you'll need to activate the virtual environment again
-- To stop the application, press Ctrl+C in the terminal
-- If port 8080 is in use, change the PORT in your .env file
-
-### 5. Verify Installation
-
-1. Visit http://localhost:8080
-2. You should see the login page
-3. Try logging in with your Google account
-4. Create a test task to verify everything works
-
-### Troubleshooting
-
-If you encounter issues:
-
-1. Ensure all environment variables are set correctly
-2. Check if Google OAuth credentials are properly configured
-3. Verify that the virtual environment is activated
-4. Check the console for error messages
-
-## Development Guide
-
-### Local Development
-
-```bash
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Install Node.js dependencies
-npm install
-
-# Watch for frontend changes
-npm run watch
-
-# In a separate terminal, run the Flask app
-python app.py
-```
-
-### API Documentation
-
-#### Task Endpoints
-
-- GET `/` - Main task view
-- POST `/add-task` - Create task
-- POST `/update-task` - Update task
-- POST `/delete-task` - Delete task
-- POST `/sync-tasks` - Sync with Google Drive
-
-#### Authentication Endpoints
-
-- GET `/login` - Login page
-- GET `/google-login` - Start OAuth flow
-- GET `/oauth2callback` - OAuth callback
-- GET `/logout` - Logout user
-
-## Afterword
-
-- 90% of this project's code were written by AI (Copilot + Cline).
-- I know that I didn't follow the rules, but I still don't feel regret because I made a good app that I think will make life easier for everyone in some ways.
-- Send love to GDGoC PTIT! Love you guys for your mentoring 💖
+- UI inspired by [jrgarciadev/nextjs-todo-list](https://github.com/jrgarciadev/nextjs-todo-list)
+- Special thanks to GDGoC PTIT mentors 💖
+- I did not follow the rule of probation stage because about 80-90% of the project's code is written by AI. Through trial and error, with many many prompting tries, me and him completed this project😓
 
 ## License
 
