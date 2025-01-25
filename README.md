@@ -32,7 +32,7 @@ Detailed instructions in the [Installation Guide](#installation-guide) section.
 
 - Google Account ([Create one](https://accounts.google.com/signup))
 - Google Cloud Platform account (optional - [Get started](https://console.cloud.google.com/))
-- OpenAI API key for Magic Sort ([Get key](https://platform.openai.com/api-keys))
+- OpenAI API key for Magic Sort ([Get key](https://platform.openai.com/api-keys)) (optional - test key included)
 
 ### Optional Development Tools
 
@@ -73,6 +73,8 @@ Detailed instructions in the [Installation Guide](#installation-guide) section.
    - Open `.env` in text editor
 
 2. Configure settings:
+
+> Note: A test OpenAI API key is included in .env.example for testing purposes. Please use responsibly and consider getting your own key for production use.
 
 ```bash
 GOOGLE_CLIENT_ID=your-client-id
