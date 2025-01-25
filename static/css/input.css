@@ -95,11 +95,11 @@
 
   /* Quadrant Themes */
   .quadrant {
-    @apply relative rounded-xl p-5 transition-all duration-300;
+    @apply relative rounded-xl p-4 transition-all duration-300;
   }
 
   .quadrant h3 {
-    @apply mb-4 text-[13px] font-medium tracking-wide relative pl-7 opacity-80;
+    @apply mb-4 text-[13px] font-medium tracking-wide relative opacity-80;
   }
 
   .quadrant h3::before {

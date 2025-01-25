@@ -75,13 +75,22 @@
             src="{{ user.picture if user and user.picture else url_for('static', filename='media_resources/default-avatar.png') }}"
             alt="User Avatar"
             class="h-12 w-12 rounded-full border-2 border-white shadow-sm"
+            onerror="this.src='{{ url_for('static', filename='media_resources/default-avatar.png') }}'"
           />
           <div class="flex flex-col">
             <span class="font-medium text-gray-900">
-              {{ user.name if user and user.name else 'User' }}
+              {% if user and user.name %}
+                {{ user.name }}
+              {% else %}
+                Guest User
+              {% endif %}
             </span>
             <span class="text-sm text-gray-500">
-              {{ user.email if user and user.email else 'user@email.com' }}
+              {% if user and user.email %}
+                {{ user.email }}
+              {% else %}
+                No email available
+              {% endif %}
             </span>
           </div>
         </div>
@@ -239,6 +248,9 @@
             <div class="quadrant quadrant-q1">
               <div class="mb-4 flex items-center justify-between">
                 <h3 class="flex items-center gap-2 font-medium text-[#dc2626]">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                   Urgent & Important
                 </h3>
               </div>
@@ -249,9 +261,49 @@
             <div class="quadrant quadrant-q2">
               <div class="mb-4 flex items-center justify-between">
                 <h3 class="flex items-center gap-2 font-medium text-[#2563eb]">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
                   Not Urgent & Important
                 </h3>
               </div>
-              <ul class="q2-tasks space-y-2"></ul>            </div>                        <!-- Q3: Urgent & Not Important -->            <div class="quadrant quadrant-q3">              <div class="mb-4 flex items-center justify-between">                <h3 class="flex items-center gap-2 font-medium text-[#f59e0b]">                  Urgent & Not Important                </h3>              </div>              <ul class="q3-tasks space-y-2"></ul>            </div>                        <!-- Q4: Not Urgent & Not Important -->            <div class="quadrant quadrant-q4">              <div class="mb-4 flex items-center justify-between">                <h3 class="flex items-center gap-2 font-medium text-[#71717a]">                  Not Urgent & Not Important                </h3>              </div>              <ul class="q4-tasks space-y-2"></ul>            </div>          </div>        </div>      </div>    </main>    <div id="notification-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>    <div id="notification-container" class="hidden"></div>    <!-- JavaScript -->    <script src="{{ url_for('static', filename='js/app.js') }}"></script>    <script>      window.initialTasks = {{ initial_tasks|tojson|safe }};
+              <ul class="q2-tasks space-y-2"></ul>
+            </div>
+            
+            <!-- Q3: Urgent & Not Important -->
+            <div class="quadrant quadrant-q3">
+              <div class="mb-4 flex items-center justify-between">
+                <h3 class="flex items-center gap-2 font-medium text-[#f59e0b]">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Urgent & Not Important
+                </h3>
+              </div>
+              <ul class="q3-tasks space-y-2"></ul>
+            </div>
+            
+            <!-- Q4: Not Urgent & Not Important -->
+            <div class="quadrant quadrant-q4">
+              <div class="mb-4 flex items-center justify-between">
+                <h3 class="flex items-center gap-2 font-medium text-[#71717a]">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                  </svg>
+                  Not Urgent & Not Important
+                </h3>
+              </div>
+              <ul class="q4-tasks space-y-2"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <div id="notification-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+    <div id="notification-container" class="hidden"></div>
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+      window.initialTasks = {{ initial_tasks|tojson|safe }};
     </script>
 </html>

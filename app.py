@@ -115,10 +115,15 @@ def index():
     """Main application page displaying task list"""
     try:
         tasks = task_manager.load_tasks()
-        return render_template("index.html", tasks=tasks, initial_tasks=[])  # Pass tasks to template directly
+        return render_template("index.html", 
+                            tasks=tasks, 
+                            initial_tasks=[],
+                            user=session.get('user', {}))  # Pass user info explicitly
     except Exception as e:
         app.logger.error(f"Error loading tasks: {str(e)}")
-        return render_template("index.html", tasks=[], user=session.get('user'))
+        return render_template("index.html", 
+                            tasks=[], 
+                            user=session.get('user', {}))
 
 #=============================================================================
 # TASK CRUD API ENDPOINTS
