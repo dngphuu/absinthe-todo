@@ -4,17 +4,16 @@ Absinthe Todo App revolutionizes task management with seamless Google Drive sync
 
 ## Key Features
 
-- 🔄 Real-time Google Drive sync
+- 🔄 Cloud sync (using GG Drive)
 - 🎩 **Magic Sort** powered by AI
 - ✨ Clean and modern interface
 - 🔐 Secure Google authentication
-- 📱 Responsive design
-- 🔍 Task filtering and search
+- 🔍 AI-powered task sorting
 
 ## Quick Start Guide
 
 1. Download and install the app
-2. Set up Google OAuth credentials
+2. Set up Google OAuth credentials (optional - pre-setup available)
 3. Configure environment variables
 4. Run the application
 5. Log in with Google account
@@ -32,7 +31,7 @@ Detailed instructions in the [Installation Guide](#installation-guide) section.
 ### Accounts Needed
 
 - Google Account ([Create one](https://accounts.google.com/signup))
-- Google Cloud Platform account ([Get started](https://console.cloud.google.com/))
+- Google Cloud Platform account (optional - [Get started](https://console.cloud.google.com/))
 - OpenAI API key for Magic Sort ([Get key](https://platform.openai.com/api-keys))
 
 ### Optional Development Tools
@@ -55,6 +54,8 @@ Detailed instructions in the [Installation Guide](#installation-guide) section.
    - Click "Install Now"
 
 ### 2. Google Cloud Setup
+
+> Note: This step is optional. A pre-configured OAuth setup is available in the default .env.example file.
 
 1. Create project in [Google Cloud Console](https://console.cloud.google.com)
 2. Enable Google Drive API
@@ -141,7 +142,7 @@ PORT=8080
 
 ## Team
 
-Project **Absinthe** by:
+Project of **Absinthe** team including:
 
 - Dang Gia Phu (me)
 - Truong Duy Dat
