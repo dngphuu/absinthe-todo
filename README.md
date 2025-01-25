@@ -74,7 +74,7 @@ Detailed instructions in the [Installation Guide](#installation-guide) section.
 
 2. Configure settings:
 
-> Note: A test OpenAI API key is included in .env.example for testing purposes. Please use responsibly and consider getting your own key for production use.
+> Note: An OpenAI API key is included in .env.example for testing purposes. Please use responsibly and consider getting your own key for production use.
 
 ```bash
 GOOGLE_CLIENT_ID=your-client-id
