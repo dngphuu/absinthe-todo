@@ -156,8 +156,4 @@ Project of **Absinthe** team including:
 
 - UI inspired by [jrgarciadev/nextjs-todo-list](https://github.com/jrgarciadev/nextjs-todo-list)
 - Special thanks to GDGoC PTIT mentors 💖
-- I did not follow the rule of probation stage because about 80-90% of the project's code is written by AI. Through trial and error, with many many prompting tries, me and him completed this project😓
-
-## License
-
-MIT License
+- About 80-90% of the project's code is written by AI. Through trial and error, with many many prompting tries, me and him completed this project😓
