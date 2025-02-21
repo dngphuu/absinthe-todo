@@ -74,7 +74,7 @@ Detailed instructions in the [Installation Guide](#installation-guide) section.
 
 2. Configure settings:
 
-> Note: A test OpenAI API key is included in .env.example for testing purposes. Please use responsibly and consider getting your own key for production use.
+> Note: An OpenAI API key is included in .env.example for testing purposes. Please use responsibly and consider getting your own key for production use.
 
 ```bash
 GOOGLE_CLIENT_ID=your-client-id
@@ -156,8 +156,5 @@ Project of **Absinthe** team including:
 
 - UI inspired by [jrgarciadev/nextjs-todo-list](https://github.com/jrgarciadev/nextjs-todo-list)
 - Special thanks to GDGoC PTIT mentors 💖
-- I did not follow the rule of probation stage because about 80-90% of the project's code is written by AI. Through trial and error, with many many prompting tries, me and him completed this project😓
-
-## License
-
-MIT License
+- About 80-90% of the project's code is written by AI. Through trial and error, with many many prompting tries, me and him completed this project😓
+- I want to complete this project so the solution I chose is co-op w/ AI😓
